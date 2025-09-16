@@ -28,9 +28,12 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile
+          // Fetch user profile - create if missing
           setTimeout(async () => {
             try {
+              // First try to ensure profile exists (for existing users)
+              await supabase.rpc('ensure_profile');
+              
               const { data: profileData, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -61,9 +64,12 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Fetch user profile
+        // Fetch user profile - create if missing
         setTimeout(async () => {
           try {
+            // First try to ensure profile exists (for existing users)
+            await supabase.rpc('ensure_profile');
+            
             const { data: profileData, error } = await supabase
               .from('profiles')
               .select('*')
