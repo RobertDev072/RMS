@@ -569,6 +569,108 @@ export const useData = () => {
     }
   };
 
+  // Create lesson request
+  const createLessonRequest = async (requestData: {
+    instructor_id: string;
+    requested_date: string;
+    duration_minutes: number;
+    location?: string;
+    notes?: string;
+  }) => {
+    try {
+      // Get current user's student ID
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('id')
+        .eq('profile_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (!studentData) {
+        throw new Error('Student not found');
+      }
+
+      const { error } = await supabase
+        .from('lesson_requests')
+        .insert([{
+          student_id: studentData.id,
+          ...requestData,
+        }]);
+
+      if (error) {
+        toast({
+          title: "Fout bij aanvragen les",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Lesverzoek verstuurd",
+        description: "Je lesverzoek is succesvol verstuurd naar de instructeur.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij aanvragen les",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  // Create payment proof
+  const createPaymentProof = async (proofData: {
+    lesson_package_id: string;
+    amount: number;
+    proof_email: string;
+  }) => {
+    try {
+      // Get current user's student ID
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('id')
+        .eq('profile_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (!studentData) {
+        throw new Error('Student not found');
+      }
+
+      const { error } = await supabase
+        .from('payment_proofs')
+        .insert([{
+          student_id: studentData.id,
+          ...proofData,
+        }]);
+
+      if (error) {
+        toast({
+          title: "Fout bij indienen betaalbewijs",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Betaalbewijs ingediend",
+        description: "Je betaalbewijs is ingediend en wordt binnenkort verwerkt.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij indienen betaalbewijs",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   // Process payment proof
   const processPaymentProof = async (
     proofId: string,
@@ -679,6 +781,8 @@ export const useData = () => {
     addCar,
     createStudent,
     createInstructor,
+    createLessonRequest,
+    createPaymentProof,
     updateLessonRequestStatus,
     processPaymentProof,
   };
