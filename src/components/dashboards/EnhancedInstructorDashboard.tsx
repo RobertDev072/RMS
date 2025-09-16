@@ -12,6 +12,7 @@ import { useData } from '@/hooks/useData';
 import { Calendar } from '@/components/Calendar';
 import { LessonRequestCard } from '@/components/LessonRequestCard';
 import { AvailabilityManager } from '@/components/AvailabilityManager';
+import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CalendarDays, Users, AlertCircle, UserPlus, Settings, Clock, Calendar as CalendarIcon } from 'lucide-react';
@@ -64,7 +65,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
     if (!user?.id) return;
     
     try {
-      const events = [];
+      const events: any[] = [];
       
       // Add lessons as events
       lessons.forEach(lesson => {
@@ -72,7 +73,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
           id: `lesson-${lesson.id}`,
           title: `Les - ${lesson.student?.profile?.full_name || 'Onbekend'}`,
           start: lesson.scheduled_at,
-          end: lesson.scheduled_at, // Add duration calculation if needed
+          end: lesson.scheduled_at, // TODO: calculate from duration
           type: 'lesson',
           status: lesson.status,
           student: lesson.student?.profile?.full_name,
@@ -95,6 +96,48 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
           notes: request.notes
         });
       });
+
+      // Fetch instructor availability and add as events
+      const { data: authUser } = await supabase.auth.getUser();
+      if (authUser.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authUser.user.id)
+          .single();
+
+        if (profile) {
+          const { data: instructor } = await supabase
+            .from('instructors')
+            .select('id')
+            .eq('profile_id', profile.id)
+            .single();
+
+          if (instructor) {
+            const { data: availability } = await supabase
+              .from('instructor_availability')
+              .select('*')
+              .eq('instructor_id', instructor.id)
+              .gte('date', format(new Date(), 'yyyy-MM-dd'))
+              .order('date', { ascending: true })
+              .order('start_time', { ascending: true });
+
+            availability?.forEach((a: any) => {
+              if (!a.is_available) {
+                const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
+                const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
+                events.push({
+                  id: `unavail-${a.id}`,
+                  title: `Niet beschikbaar`,
+                  start: startISO,
+                  end: endISO,
+                  type: 'unavailable'
+                });
+              }
+            });
+          }
+        }
+      }
       
       setCalendarEvents(events);
     } catch (error) {

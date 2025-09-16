@@ -14,6 +14,7 @@ import { CalendarIcon, Plus, Clock, AlertTriangle, Check, X } from 'lucide-react
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AvailabilityEntry {
   id: string;
@@ -32,6 +33,7 @@ interface AvailabilityManagerProps {
 
 export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManagerProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([]);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,16 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
 
       if (error) {
         console.error('Error creating availability:', error);
+        toast({
+          title: 'Fout bij opslaan',
+          description: error.message,
+          variant: 'destructive',
+        });
       } else {
+        toast({
+          title: 'Beschikbaarheid opgeslagen',
+          description: 'Je beschikbaarheid is bijgewerkt.',
+        });
         await fetchAvailability();
         setShowDialog(false);
         setFormData({
@@ -149,8 +160,13 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
         });
         onAvailabilityChange?.();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in handleSubmit:', error);
+      toast({
+        title: 'Fout bij opslaan',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 

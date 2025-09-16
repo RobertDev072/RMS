@@ -108,8 +108,8 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     }
   };
 
-  const loadCalendarEvents = () => {
-    const events = [];
+  const loadCalendarEvents = async () => {
+    const events: any[] = [];
     
     // Add lessons as events
     lessons.forEach(lesson => {
@@ -138,6 +138,37 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
         notes: request.notes
       });
     });
+
+    // Add instructors' non-availability to calendar
+    try {
+      const { data: availability } = await supabase
+        .from('instructor_availability')
+        .select(`
+          *,
+          instructor:instructors!inner(
+            profile:profiles!inner(full_name)
+          )
+        `)
+        .gte('date', format(new Date(), 'yyyy-MM-dd'))
+        .order('date', { ascending: true })
+        .order('start_time', { ascending: true });
+
+      availability?.forEach((a: any) => {
+        if (!a.is_available) {
+          const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
+          const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
+          events.push({
+            id: `unavail-${a.id}`,
+            title: `Niet beschikbaar - ${a.instructor?.profile?.full_name || 'Instructeur'}`,
+            start: startISO,
+            end: endISO,
+            type: 'unavailable'
+          });
+        }
+      });
+    } catch (e) {
+      console.error('Error fetching availability for calendar:', e);
+    }
     
     setCalendarEvents(events);
   };
