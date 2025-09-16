@@ -55,14 +55,25 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
     try {
       setLoading(true);
       
-      // First get instructor ID
+      // First get profile then instructor ID
+      const { data: authUser } = await supabase.auth.getUser();
+      if (!authUser.user) return;
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authUser.user.id)
+        .single();
+      if (profileErr || !profile) {
+        console.error('Error fetching profile:', profileErr);
+        return;
+      }
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
         .select('id')
-        .eq('profile_id', user?.id)
+        .eq('profile_id', profile.id)
         .single();
 
-      if (instructorError) {
+      if (instructorError || !instructorData) {
         console.error('Error fetching instructor:', instructorError);
         return;
       }
@@ -90,14 +101,25 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
 
   const handleSubmit = async () => {
     try {
-      // Get instructor ID
+      // Get profile then instructor ID
+      const { data: authUser } = await supabase.auth.getUser();
+      if (!authUser.user) return;
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authUser.user.id)
+        .single();
+      if (profileErr || !profile) {
+        console.error('Error fetching profile:', profileErr);
+        return;
+      }
       const { data: instructorData, error: instructorError } = await supabase
         .from('instructors')
         .select('id')
-        .eq('profile_id', user?.id)
+        .eq('profile_id', profile.id)
         .single();
 
-      if (instructorError) {
+      if (instructorError || !instructorData) {
         console.error('Error fetching instructor:', instructorError);
         return;
       }

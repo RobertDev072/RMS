@@ -83,13 +83,21 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
   const fetchStudentData = async () => {
     try {
+      const { data: authUser } = await supabase.auth.getUser();
+      if (!authUser.user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', authUser.user.id)
+        .single();
+      if (!profile) return;
       const { data } = await supabase
         .from('students')
         .select(`
           *,
           profile:profiles(*)
         `)
-        .eq('profile_id', user?.id)
+        .eq('profile_id', profile.id)
         .single();
       
       if (data) {
