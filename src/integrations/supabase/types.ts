@@ -14,7 +14,256 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      instructors: {
+        Row: {
+          available_hours: Json | null
+          created_at: string
+          id: string
+          max_lessons_per_day: number | null
+          profile_id: string
+          specializations: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          available_hours?: Json | null
+          created_at?: string
+          id?: string
+          max_lessons_per_day?: number | null
+          profile_id: string
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          available_hours?: Json | null
+          created_at?: string
+          id?: string
+          max_lessons_per_day?: number | null
+          profile_id?: string
+          specializations?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instructors_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_feedback: {
+        Row: {
+          comments: string | null
+          created_at: string
+          driving_skills: number | null
+          id: string
+          instructor_id: string
+          lesson_id: string
+          overall_progress: number | null
+          parking_skills: number | null
+          recommendations: string | null
+          traffic_awareness: number | null
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          driving_skills?: number | null
+          id?: string
+          instructor_id: string
+          lesson_id: string
+          overall_progress?: number | null
+          parking_skills?: number | null
+          recommendations?: string | null
+          traffic_awareness?: number | null
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          driving_skills?: number | null
+          id?: string
+          instructor_id?: string
+          lesson_id?: string
+          overall_progress?: number | null
+          parking_skills?: number | null
+          recommendations?: string | null
+          traffic_awareness?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_feedback_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_feedback_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          lessons_count: number
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          lessons_count: number
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          lessons_count?: number
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      lessons: {
+        Row: {
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          instructor_id: string
+          location: string | null
+          notes: string | null
+          scheduled_at: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          instructor_id: string
+          location?: string | null
+          notes?: string | null
+          scheduled_at: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          instructor_id?: string
+          location?: string | null
+          notes?: string | null
+          scheduled_at?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lessons_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          created_at: string
+          id: string
+          lessons_remaining: number | null
+          license_type: string | null
+          profile_id: string
+          theory_exam_passed: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lessons_remaining?: number | null
+          license_type?: string | null
+          profile_id: string
+          theory_exam_passed?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lessons_remaining?: number | null
+          license_type?: string | null
+          profile_id?: string
+          theory_exam_passed?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "students_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

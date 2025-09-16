@@ -7,41 +7,68 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Car, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (email: string, password: string, role: string) => void;
 }
 
-const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
+const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [registerData, setRegisterData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     name: "",
-    role: "",
+    role: "student" as 'admin' | 'instructor' | 'student',
     phone: "",
-    rijschoolName: ""
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const { signIn, signUp } = useAuth();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo login - in real app this would connect to Supabase
-    onLogin(loginEmail, loginPassword, "admin");
+    if (!loginEmail || !loginPassword) return;
+
+    setLoading(true);
+    const result = await signIn(loginEmail, loginPassword);
+    setLoading(false);
+
+    if (!result.error) {
+      onClose();
+      setLoginEmail("");
+      setLoginPassword("");
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo register - in real app this would connect to Supabase
+    if (!registerData.email || !registerData.password || !registerData.name) return;
+    
     if (registerData.password !== registerData.confirmPassword) {
       alert("Wachtwoorden komen niet overeen");
       return;
     }
-    onLogin(registerData.email, registerData.password, registerData.role);
+
+    setLoading(true);
+    const result = await signUp(registerData.email, registerData.password, registerData.name, registerData.role);
+    setLoading(false);
+
+    if (!result.error) {
+      onClose();
+      setRegisterData({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        name: "",
+        role: "student",
+        phone: "",
+      });
+    }
   };
 
   return (
@@ -117,20 +144,11 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
                       <Button 
                         type="submit" 
                         className="w-full bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-button"
+                        disabled={loading}
                       >
-                        Inloggen
+                        {loading ? 'Inloggen...' : 'Inloggen'}
                       </Button>
                     </form>
-                    
-                    {/* Demo Accounts */}
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <p className="text-sm font-medium mb-2">Demo Accounts:</p>
-                      <div className="space-y-1 text-xs">
-                        <p><strong>Admin:</strong> admin@demo.nl / admin123</p>
-                        <p><strong>Instructeur:</strong> instructeur@demo.nl / inst123</p>
-                        <p><strong>Leerling:</strong> leerling@demo.nl / leer123</p>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -145,29 +163,16 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
                   </CardHeader>
                   <CardContent className="px-0">
                     <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="register-name">Volledige naam</Label>
-                          <Input
-                            id="register-name"
-                            placeholder="Jan Janssen"
-                            value={registerData.name}
-                            onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                            required
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="register-phone">Telefoonnummer</Label>
-                          <Input
-                            id="register-phone"
-                            placeholder="06-12345678"
-                            value={registerData.phone}
-                            onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
-                            required
-                            className="mt-1"
-                          />
-                        </div>
+                      <div>
+                        <Label htmlFor="register-name">Volledige naam</Label>
+                        <Input
+                          id="register-name"
+                          placeholder="Jan Janssen"
+                          value={registerData.name}
+                          onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                          required
+                          className="mt-1"
+                        />
                       </div>
                       
                       <div>
@@ -185,7 +190,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
 
                       <div>
                         <Label htmlFor="register-role">Rol</Label>
-                        <Select value={registerData.role} onValueChange={(value) => setRegisterData({ ...registerData, role: value })}>
+                        <Select value={registerData.role} onValueChange={(value: 'admin' | 'instructor' | 'student') => setRegisterData({ ...registerData, role: value })}>
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Kies je rol" />
                           </SelectTrigger>
@@ -197,27 +202,13 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
                         </Select>
                       </div>
 
-                      {registerData.role === 'admin' && (
-                        <div>
-                          <Label htmlFor="rijschool-name">Rijschool naam</Label>
-                          <Input
-                            id="rijschool-name"
-                            placeholder="Rijschool De Veilige Weg"
-                            value={registerData.rijschoolName}
-                            onChange={(e) => setRegisterData({ ...registerData, rijschoolName: e.target.value })}
-                            required
-                            className="mt-1"
-                          />
-                        </div>
-                      )}
-
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="register-password">Wachtwoord</Label>
                           <Input
                             id="register-password"
                             type="password"
-                            placeholder="Minimaal 8 karakters"
+                            placeholder="Minimaal 6 karakters"
                             value={registerData.password}
                             onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                             required
@@ -241,8 +232,9 @@ const LoginModal = ({ isOpen, onClose, onLogin }: LoginModalProps) => {
                       <Button 
                         type="submit" 
                         className="w-full bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-button"
+                        disabled={loading}
                       >
-                        Account Aanmaken
+                        {loading ? 'Account aanmaken...' : 'Account Aanmaken'}
                       </Button>
                     </form>
                   </CardContent>
