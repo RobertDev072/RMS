@@ -11,6 +11,61 @@ interface LessonPackage {
   is_active: boolean;
 }
 
+interface Car {
+  id: string;
+  license_plate: string;
+  brand: string;
+  model: string;
+  year?: number;
+  is_available: boolean;
+}
+
+interface PaymentProof {
+  id: string;
+  student_id: string;
+  lesson_package_id: string;
+  proof_email: string;
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  admin_notes?: string;
+  submitted_at: string;
+  processed_at?: string;
+  processed_by?: string;
+  student?: {
+    profile: {
+      full_name: string;
+      email: string;
+    };
+  };
+  lesson_package?: LessonPackage;
+}
+
+interface LessonRequest {
+  id: string;
+  student_id: string;
+  instructor_id: string;
+  requested_date: string;
+  duration_minutes: number;
+  location?: string;
+  notes?: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'rescheduled';
+  instructor_notes?: string;
+  created_at: string;
+  updated_at: string;
+  student?: {
+    profile: {
+      full_name: string;
+      email: string;
+    };
+  };
+  instructor?: {
+    profile: {
+      full_name: string;
+      email: string;
+    };
+  };
+}
+
 interface Lesson {
   id: string;
   student_id: string;
@@ -64,6 +119,9 @@ export const useData = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [lessonPackages, setLessonPackages] = useState<LessonPackage[]>([]);
+  const [cars, setCars] = useState<Car[]>([]);
+  const [paymentProofs, setPaymentProofs] = useState<PaymentProof[]>([]);
+  const [lessonRequests, setLessonRequests] = useState<LessonRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -250,17 +308,330 @@ export const useData = () => {
     }
   };
 
+  // Fetch cars
+  const fetchCars = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('cars')
+        .select('*')
+        .order('license_plate', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching cars:', error);
+        return;
+      }
+
+      setCars(data || []);
+    } catch (error) {
+      console.error('Error in fetchCars:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch payment proofs
+  const fetchPaymentProofs = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('payment_proofs')
+        .select(`
+          *,
+          student:students!inner(
+            profile:profiles!inner(full_name, email)
+          ),
+          lesson_package:lesson_packages(*)
+        `)
+        .order('submitted_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching payment proofs:', error);
+        return;
+      }
+
+      setPaymentProofs(data as PaymentProof[] || []);
+    } catch (error) {
+      console.error('Error in fetchPaymentProofs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch lesson requests
+  const fetchLessonRequests = async (userRole?: string, userId?: string) => {
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('lesson_requests')
+        .select(`
+          *,
+          student:students!inner(
+            profile:profiles!inner(full_name, email)
+          ),
+          instructor:instructors!inner(
+            profile:profiles!inner(full_name, email)
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      // Filter based on user role
+      if (userRole === 'instructor' && userId) {
+        query = query.eq('instructor.profile.user_id', userId);
+      } else if (userRole === 'student' && userId) {
+        query = query.eq('student.profile.user_id', userId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching lesson requests:', error);
+        return;
+      }
+
+      setLessonRequests(data as LessonRequest[] || []);
+    } catch (error) {
+      console.error('Error in fetchLessonRequests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add car
+  const addCar = async (carData: {
+    license_plate: string;
+    brand: string;
+    model: string;
+    year?: number;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('cars')
+        .insert([carData]);
+
+      if (error) {
+        toast({
+          title: "Fout bij toevoegen auto",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Auto toegevoegd",
+        description: "De auto is succesvol toegevoegd.",
+      });
+
+      await fetchCars();
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij toevoegen auto",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  // Create student
+  const createStudent = async (studentData: {
+    email: string;
+    full_name: string;
+    phone?: string;
+    license_type?: string;
+  }) => {
+    try {
+      // First create user account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: studentData.email,
+        password: 'TempPass123!', // Temporary password
+        options: {
+          data: {
+            full_name: studentData.full_name,
+            role: 'student'
+          }
+        }
+      });
+
+      if (authError) {
+        toast({
+          title: "Fout bij aanmaken leerling",
+          description: authError.message,
+          variant: "destructive",
+        });
+        return { error: authError, credentials: null };
+      }
+
+      toast({
+        title: "Leerling aangemaakt",
+        description: `Leerling ${studentData.full_name} is aangemaakt met tijdelijk wachtwoord: TempPass123!`,
+      });
+
+      await fetchStudents();
+      return { 
+        error: null, 
+        credentials: {
+          email: studentData.email,
+          password: 'TempPass123!'
+        }
+      };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij aanmaken leerling",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error, credentials: null };
+    }
+  };
+
+  // Create instructor
+  const createInstructor = async (instructorData: {
+    email: string;
+    full_name: string;
+    phone?: string;
+    specializations?: string[];
+  }) => {
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: instructorData.email,
+        password: 'InstructorPass123!',
+        options: {
+          data: {
+            full_name: instructorData.full_name,
+            role: 'instructor'
+          }
+        }
+      });
+
+      if (authError) {
+        toast({
+          title: "Fout bij aanmaken instructeur",
+          description: authError.message,
+          variant: "destructive",
+        });
+        return { error: authError };
+      }
+
+      toast({
+        title: "Instructeur aangemaakt",
+        description: `Instructeur ${instructorData.full_name} is aangemaakt.`,
+      });
+
+      await fetchInstructors();
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij aanmaken instructeur",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  // Update lesson request status
+  const updateLessonRequestStatus = async (
+    requestId: string, 
+    status: 'accepted' | 'rejected' | 'rescheduled',
+    instructorNotes?: string
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('lesson_requests')
+        .update({ status, instructor_notes: instructorNotes })
+        .eq('id', requestId);
+
+      if (error) {
+        toast({
+          title: "Fout bij bijwerken verzoek",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Verzoek bijgewerkt",
+        description: `Lesverzoek is ${status}.`,
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij bijwerken verzoek",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
+  // Process payment proof
+  const processPaymentProof = async (
+    proofId: string,
+    status: 'approved' | 'rejected',
+    adminNotes?: string
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('payment_proofs')
+        .update({ 
+          status, 
+          admin_notes: adminNotes,
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', proofId);
+
+      if (error) {
+        toast({
+          title: "Fout bij verwerken betaalbewijs",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Betaalbewijs verwerkt",
+        description: `Betaalbewijs is ${status}.`,
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij verwerken betaalbewijs",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   return {
     lessons,
     students,
     instructors,
     lessonPackages,
+    cars,
+    paymentProofs,
+    lessonRequests,
     loading,
     fetchLessons,
     fetchStudents,
     fetchInstructors,
     fetchLessonPackages,
+    fetchCars,
+    fetchPaymentProofs,
+    fetchLessonRequests,
     scheduleLesson,
     updateLessonStatus,
+    addCar,
+    createStudent,
+    createInstructor,
+    updateLessonRequestStatus,
+    processPaymentProof,
   };
 };

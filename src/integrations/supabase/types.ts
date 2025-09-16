@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      cars: {
+        Row: {
+          brand: string
+          created_at: string
+          id: string
+          is_available: boolean
+          license_plate: string
+          model: string
+          updated_at: string
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          license_plate: string
+          model: string
+          updated_at?: string
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          license_plate?: string
+          model?: string
+          updated_at?: string
+          year?: number | null
+        }
+        Relationships: []
+      }
+      instructor_availability: {
+        Row: {
+          created_at: string
+          date: string
+          end_time: string
+          id: string
+          instructor_id: string
+          is_available: boolean
+          reason: string | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          end_time: string
+          id?: string
+          instructor_id: string
+          is_available?: boolean
+          reason?: string | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          end_time?: string
+          id?: string
+          instructor_id?: string
+          is_available?: boolean
+          reason?: string | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_availability_instructor"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       instructors: {
         Row: {
           available_hours: Json | null
@@ -136,6 +210,63 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_requests: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          id: string
+          instructor_id: string
+          instructor_notes: string | null
+          location: string | null
+          notes: string | null
+          requested_date: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id: string
+          instructor_notes?: string | null
+          location?: string | null
+          notes?: string | null
+          requested_date: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          instructor_id?: string
+          instructor_notes?: string | null
+          location?: string | null
+          notes?: string | null
+          requested_date?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_lesson_requests_instructor"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "instructors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_lesson_requests_student"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           created_at: string
@@ -183,6 +314,67 @@ export type Database = {
           },
           {
             foreignKeyName: "lessons_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_proofs: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          id: string
+          lesson_package_id: string
+          processed_at: string | null
+          processed_by: string | null
+          proof_email: string
+          status: string
+          student_id: string
+          submitted_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          id?: string
+          lesson_package_id: string
+          processed_at?: string | null
+          processed_by?: string | null
+          proof_email: string
+          status?: string
+          student_id: string
+          submitted_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          id?: string
+          lesson_package_id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          proof_email?: string
+          status?: string
+          student_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_payment_proofs_admin"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_payment_proofs_package"
+            columns: ["lesson_package_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_payment_proofs_student"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"

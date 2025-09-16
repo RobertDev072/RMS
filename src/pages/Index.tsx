@@ -3,9 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import RijschoolHeader from "@/components/RijschoolHeader";
 import HeroSection from "@/components/HeroSection";
 import LoginModal from "@/components/LoginModal";
-import RealAdminDashboard from "@/components/dashboards/RealAdminDashboard";
-import InstructorDashboard from "@/components/dashboards/InstructorDashboard";
-import StudentDashboard from "@/components/dashboards/StudentDashboard";
+import EnhancedAdminDashboard from "@/components/dashboards/EnhancedAdminDashboard";
+import EnhancedInstructorDashboard from "@/components/dashboards/EnhancedInstructorDashboard";
+import EnhancedStudentDashboard from "@/components/dashboards/EnhancedStudentDashboard";
 
 const Index = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -31,11 +31,11 @@ const Index = () => {
   if (user && profile) {
     switch (profile.role) {
       case 'admin':
-        return <RealAdminDashboard userName={profile.full_name} onLogout={signOut} />;
+        return <EnhancedAdminDashboard userName={profile.full_name} onLogout={signOut} />;
       case 'instructor':
-        return <InstructorDashboard userName={profile.full_name} onLogout={signOut} />;
+        return <EnhancedInstructorDashboard userName={profile.full_name} onLogout={signOut} />;
       case 'student':
-        return <StudentDashboard userName={profile.full_name} onLogout={signOut} />;
+        return <EnhancedStudentDashboard userName={profile.full_name} onLogout={signOut} />;
     }
   }
 
