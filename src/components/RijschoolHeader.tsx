@@ -39,12 +39,6 @@ const RijschoolHeader = ({ onLoginClick, onRegisterClick }: RijschoolHeaderProps
           <Button variant="ghost" onClick={onLoginClick}>
             Inloggen
           </Button>
-          <Button 
-            onClick={onRegisterClick}
-            className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-button"
-          >
-            Gratis Proberen
-          </Button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -76,12 +70,6 @@ const RijschoolHeader = ({ onLoginClick, onRegisterClick }: RijschoolHeaderProps
                 <Button variant="ghost" onClick={onLoginClick} className="w-full justify-start">
                   <User className="w-4 h-4 mr-2" />
                   Inloggen
-                </Button>
-                <Button 
-                  onClick={onRegisterClick}
-                  className="w-full bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-button"
-                >
-                  Gratis Proberen
                 </Button>
               </div>
             </div>

@@ -92,9 +92,8 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
 
           <div className="px-6 pb-6">
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className="grid w/full grid-cols-1 mb-6">
                 <TabsTrigger value="login">Inloggen</TabsTrigger>
-                <TabsTrigger value="register">Registreren</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
@@ -153,93 +152,6 @@ const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="register">
-                <Card className="border-0 shadow-none">
-                  <CardHeader className="px-0 pt-0">
-                    <CardTitle>Account aanmaken</CardTitle>
-                    <CardDescription>
-                      Maak een nieuw account aan voor je rijschool
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="px-0">
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div>
-                        <Label htmlFor="register-name">Volledige naam</Label>
-                        <Input
-                          id="register-name"
-                          placeholder="Jan Janssen"
-                          value={registerData.name}
-                          onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                          required
-                          className="mt-1"
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="register-email">E-mailadres</Label>
-                        <Input
-                          id="register-email"
-                          type="email"
-                          placeholder="jouw@email.nl"
-                          value={registerData.email}
-                          onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                          required
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="register-role">Rol</Label>
-                        <Select value={registerData.role} onValueChange={(value: 'admin' | 'instructor' | 'student') => setRegisterData({ ...registerData, role: value })}>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Kies je rol" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Rijschool Eigenaar</SelectItem>
-                            <SelectItem value="instructor">Rijinstructeur</SelectItem>
-                            <SelectItem value="student">Leerling</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="register-password">Wachtwoord</Label>
-                          <Input
-                            id="register-password"
-                            type="password"
-                            placeholder="Minimaal 6 karakters"
-                            value={registerData.password}
-                            onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                            required
-                            className="mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="register-confirm">Bevestig wachtwoord</Label>
-                          <Input
-                            id="register-confirm"
-                            type="password"
-                            placeholder="Herhaal wachtwoord"
-                            value={registerData.confirmPassword}
-                            onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                            required
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-
-                      <Button 
-                        type="submit" 
-                        className="w-full bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-button"
-                        disabled={loading}
-                      >
-                        {loading ? 'Account aanmaken...' : 'Account Aanmaken'}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </div>
         </div>
