@@ -375,7 +375,41 @@ export const useData = () => {
         `)
         .order('created_at', { ascending: false });
 
-      // Rely on RLS; no explicit user-level filter here
+      // Explicit filters to avoid join-path issues
+      if (userRole === 'instructor' && userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        if (profile) {
+          const { data: instructor } = await supabase
+            .from('instructors')
+            .select('id')
+            .eq('profile_id', profile.id)
+            .single();
+          if (instructor) {
+            query = query.eq('instructor_id', instructor.id);
+          }
+        }
+      } else if (userRole === 'student' && userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        if (profile) {
+          const { data: student } = await supabase
+            .from('students')
+            .select('id')
+            .eq('profile_id', profile.id)
+            .single();
+          if (student) {
+            query = query.eq('student_id', student.id);
+          }
+        }
+      }
+
       const { data, error } = await query;
 
       if (error) {
