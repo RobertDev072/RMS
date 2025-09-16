@@ -576,7 +576,31 @@ export const useData = () => {
     adminNotes?: string
   ) => {
     try {
-      const { error } = await supabase
+      // First get the payment proof details
+      const { data: proofData, error: proofError } = await supabase
+        .from('payment_proofs')
+        .select(`
+          *,
+          lesson_package:lesson_packages(*),
+          student:students(
+            *,
+            profile:profiles(full_name, email)
+          )
+        `)
+        .eq('id', proofId)
+        .single();
+
+      if (proofError) {
+        toast({
+          title: "Fout bij ophalen betaalbewijs",
+          description: proofError.message,
+          variant: "destructive",
+        });
+        return { error: proofError };
+      }
+
+      // Update payment proof status
+      const { error: updateError } = await supabase
         .from('payment_proofs')
         .update({ 
           status, 
@@ -585,19 +609,43 @@ export const useData = () => {
         })
         .eq('id', proofId);
 
-      if (error) {
+      if (updateError) {
         toast({
           title: "Fout bij verwerken betaalbewijs",
-          description: error.message,
+          description: updateError.message,
           variant: "destructive",
         });
-        return { error };
+        return { error: updateError };
       }
 
-      toast({
-        title: "Betaalbewijs verwerkt",
-        description: `Betaalbewijs is ${status}.`,
-      });
+      // If approved, add lessons to student
+      if (status === 'approved' && proofData.lesson_package && proofData.student) {
+        const { error: studentUpdateError } = await supabase
+          .from('students')
+          .update({
+            lessons_remaining: (proofData.student.lessons_remaining || 0) + proofData.lesson_package.lessons_count
+          })
+          .eq('id', proofData.student_id);
+
+        if (studentUpdateError) {
+          toast({
+            title: "Fout bij toewijzen lessen",
+            description: studentUpdateError.message,
+            variant: "destructive",
+          });
+          return { error: studentUpdateError };
+        }
+
+        toast({
+          title: "Lespakket toegewezen",
+          description: `${proofData.lesson_package.lessons_count} lessen toegevoegd aan ${proofData.student.profile?.full_name || 'leerling'}.`,
+        });
+      } else {
+        toast({
+          title: "Betaalbewijs verwerkt",
+          description: `Betaalbewijs is ${status}.`,
+        });
+      }
 
       return { error: null };
     } catch (error: any) {
