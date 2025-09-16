@@ -578,15 +578,32 @@ export const useData = () => {
     notes?: string;
   }) => {
     try {
-      // Get current user's student ID
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error('Niet ingelogd');
+      }
+
+      // Get profile first
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .single();
+
+      if (!profileData) {
+        throw new Error('Profiel niet gevonden');
+      }
+
+      // Get student record
       const { data: studentData } = await supabase
         .from('students')
         .select('id')
-        .eq('profile_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('profile_id', profileData.id)
         .single();
 
       if (!studentData) {
-        throw new Error('Student not found');
+        throw new Error('Student niet gevonden');
       }
 
       const { error } = await supabase
@@ -628,15 +645,32 @@ export const useData = () => {
     proof_email: string;
   }) => {
     try {
-      // Get current user's student ID
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error('Niet ingelogd');
+      }
+
+      // Get profile first
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', userData.user.id)
+        .single();
+
+      if (!profileData) {
+        throw new Error('Profiel niet gevonden');
+      }
+
+      // Get student record
       const { data: studentData } = await supabase
         .from('students')
         .select('id')
-        .eq('profile_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('profile_id', profileData.id)
         .single();
 
       if (!studentData) {
-        throw new Error('Student not found');
+        throw new Error('Student niet gevonden');
       }
 
       const { error } = await supabase
