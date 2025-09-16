@@ -375,13 +375,7 @@ export const useData = () => {
         `)
         .order('created_at', { ascending: false });
 
-      // Filter based on user role
-      if (userRole === 'instructor' && userId) {
-        query = query.eq('instructor.profile.user_id', userId);
-      } else if (userRole === 'student' && userId) {
-        query = query.eq('student.profile.user_id', userId);
-      }
-
+      // Rely on RLS; no explicit user-level filter here
       const { data, error } = await query;
 
       if (error) {
