@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
+import { MobileProfileHeader } from '@/components/MobileProfileHeader';
 
 interface EnhancedAdminDashboardProps {
   userName: string;
@@ -95,20 +96,13 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Welkom terug, {userName}</p>
-          </div>
-          <Button variant="outline" onClick={onLogout}>
-            Uitloggen
-          </Button>
-        </div>
-      </div>
+      <MobileProfileHeader 
+        userName={userName}
+        userRole="admin"
+        onLogout={onLogout}
+      />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>

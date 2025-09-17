@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, addWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CalendarDays, Users, AlertCircle, UserPlus, Settings, Clock, Calendar as CalendarIcon } from 'lucide-react';
+import { MobileProfileHeader } from '@/components/MobileProfileHeader';
 
 interface EnhancedInstructorDashboardProps {
   userName: string;
@@ -209,20 +210,13 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-card border-b p-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Instructeur Dashboard</h1>
-            <p className="text-muted-foreground">Welkom terug, {userName}</p>
-          </div>
-          <Button variant="outline" onClick={onLogout}>
-            Uitloggen
-          </Button>
-        </div>
-      </div>
+      <MobileProfileHeader 
+        userName={userName}
+        userRole="instructor"
+        onLogout={onLogout}
+      />
 
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
