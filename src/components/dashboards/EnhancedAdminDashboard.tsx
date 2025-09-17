@@ -181,7 +181,15 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => {
+              const carsSection = document.getElementById('cars-management');
+              if (carsSection) {
+                carsSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -207,7 +215,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
         </div>
 
         {/* Auto's Beheren */}
-        <Card>
+        <Card id="cars-management">
           <CardHeader>
             <CardTitle>Auto's Beheren</CardTitle>
           </CardHeader>
