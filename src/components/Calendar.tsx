@@ -3,7 +3,7 @@ import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, 
 import { nl } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Clock, User, MapPin, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, User, MapPin, Plus, MessageCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -245,19 +245,31 @@ export const Calendar = ({
                         {event.student}
                       </div>
                     )}
-                    {event.location && (
-                      <div className="truncate text-xs opacity-80">
-                        <MapPin className="inline h-3 w-3 mr-1" />
-                        {event.location}
-                      </div>
-                    )}
-                     {event.status && (
-                       <Badge variant="secondary" className="text-xs mt-1">
-                         {event.status === 'pending' ? 'Wachtend' : 
-                          event.status === 'rejected' ? 'Afgewezen' :
-                          event.status === 'accepted' ? 'Geaccepteerd' :
-                          event.status.trim() !== '' ? `Goedgekeurd: ${event.status}` : 'Wachtend'}
-                       </Badge>
+                     {event.location && (
+                       <div className="truncate text-xs opacity-80">
+                         <MapPin className="inline h-3 w-3 mr-1" />
+                         {event.location}
+                       </div>
+                     )}
+                     {/* Show notes for instructors, status for others */}
+                     {userRole === 'instructor' ? (
+                       event.notes && (
+                         <div className="truncate text-xs opacity-80">
+                           <MessageCircle className="inline h-3 w-3 mr-1" />
+                           {event.notes}
+                         </div>
+                       )
+                     ) : (
+                       event.status && (
+                         <Badge variant="secondary" className="text-xs mt-1">
+                           {event.status === 'pending' ? 'Wachtend' : 
+                            event.status === 'rejected' ? 'Afgewezen' :
+                            event.status === 'accepted' ? 'Geaccepteerd' :
+                            event.status === 'completed' ? 'Voltooid' :
+                            event.status === 'scheduled' ? 'Ingepland' :
+                            event.status.trim() !== '' ? `Status: ${event.status}` : 'Wachtend'}
+                         </Badge>
+                       )
                      )}
                   </div>
                 ))}
