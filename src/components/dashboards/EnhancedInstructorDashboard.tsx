@@ -145,6 +145,8 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
       }
       
       setCalendarEvents(events);
+      console.log('Calendar events loaded:', events.length, 'events');
+      console.log('Lesson requests in calendar:', events.filter(e => e.type === 'request'));
     } catch (error) {
       console.error('Error loading calendar events:', error);
     }
@@ -164,7 +166,9 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
   const todayAcceptedRequests = lessonRequests.filter(request => {
     const today = new Date().toDateString();
     const requestDate = new Date(request.requested_date).toDateString();
-    return requestDate === today && (request.status === 'accepted' || request.status.toLowerCase().includes('goedgekeurd'));
+    // Consider any non-empty, non-pending status as accepted
+    const isAccepted = request.status && request.status.trim() !== '' && request.status !== 'pending' && request.status !== 'rejected';
+    return requestDate === today && isAccepted;
   });
 
   const pendingRequests = lessonRequests.filter(request => request.status === 'pending');
@@ -430,7 +434,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                           )}
                         </div>
                         <Badge variant="default" className="bg-green-600">
-                          Goedgekeurd
+                          {request.status || 'Goedgekeurd'}
                         </Badge>
                       </div>
                     ))}

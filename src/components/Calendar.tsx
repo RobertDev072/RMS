@@ -13,7 +13,7 @@ interface CalendarEvent {
   start: string;
   end?: string;
   type: 'lesson' | 'unavailable' | 'request';
-  status?: 'scheduled' | 'completed' | 'cancelled' | 'pending' | 'accepted' | 'rejected';
+  status?: string; // Made more flexible to handle any status value
   student?: string;
   instructor?: string;
   location?: string;
@@ -84,15 +84,17 @@ export const Calendar = ({
             return cn(baseClasses, "bg-primary text-primary-foreground");
         }
       case 'request':
-        switch (event.status) {
-          case 'pending':
-            return cn(baseClasses, "bg-yellow-400 text-yellow-900 border-2 border-yellow-600");
-          case 'accepted':
-            return cn(baseClasses, "bg-green-400 text-green-900");
-          case 'rejected':
-            return cn(baseClasses, "bg-red-400 text-red-900");
-          default:
-            return cn(baseClasses, "bg-yellow-400 text-yellow-900");
+        // Handle non-standard statuses - treat any non-empty, non-pending, non-rejected as accepted
+        if (event.status === 'pending') {
+          return cn(baseClasses, "bg-yellow-400 text-yellow-900 border-2 border-yellow-600");
+        } else if (event.status === 'rejected') {
+          return cn(baseClasses, "bg-red-400 text-red-900");
+        } else if (event.status === 'accepted' || (event.status && event.status.trim() !== '' && event.status !== 'pending' && event.status !== 'rejected')) {
+          // Treat any non-empty status that's not pending/rejected as accepted/approved
+          return cn(baseClasses, "bg-green-400 text-green-900");
+        } else {
+          // Empty status or pending by default
+          return cn(baseClasses, "bg-yellow-400 text-yellow-900");
         }
       case 'unavailable':
         return cn(baseClasses, "bg-gray-400 text-white opacity-75");
@@ -249,11 +251,14 @@ export const Calendar = ({
                         {event.location}
                       </div>
                     )}
-                    {event.status && (
-                      <Badge variant="secondary" className="text-xs mt-1">
-                        {event.status}
-                      </Badge>
-                    )}
+                     {event.status && (
+                       <Badge variant="secondary" className="text-xs mt-1">
+                         {event.status === 'pending' ? 'Wachtend' : 
+                          event.status === 'rejected' ? 'Afgewezen' :
+                          event.status === 'accepted' ? 'Geaccepteerd' :
+                          event.status.trim() !== '' ? `Goedgekeurd: ${event.status}` : 'Wachtend'}
+                       </Badge>
+                     )}
                   </div>
                 ))}
               </div>
