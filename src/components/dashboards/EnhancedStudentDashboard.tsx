@@ -228,17 +228,25 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
       const requestedEnd = addMinutes(lessonForm.requested_date, lessonForm.duration_minutes);
       const requestedEndStr = format(requestedEnd, 'HH:mm:ss');
       
+      console.log('Checking availability for:', {
+        date: requestedDate,
+        startTime: requestedStartStr,
+        endTime: requestedEndStr,
+        instructorId: lessonForm.instructor_id
+      });
+      
       const { data: overlappingSlots, error: overlapErr } = await supabase
         .from('instructor_availability')
         .select('*')
         .eq('instructor_id', lessonForm.instructor_id)
         .eq('date', requestedDate)
-        .lt('start_time', requestedEndStr)
-        .gt('end_time', requestedStartStr);
+        .or(`and(start_time.lte.${requestedStartStr},end_time.gt.${requestedStartStr}),and(start_time.lt.${requestedEndStr},end_time.gte.${requestedEndStr}),and(start_time.gte.${requestedStartStr},end_time.lte.${requestedEndStr})`);
 
       if (overlapErr) {
         console.error('Error checking availability overlap:', overlapErr);
       }
+
+      console.log('Found overlapping slots:', overlappingSlots);
 
       // Block only if there is an overlapping slot explicitly marked as NOT available
       const blocking = (overlappingSlots || []).find(s => s.is_available === false);
