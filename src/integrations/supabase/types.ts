@@ -327,8 +327,11 @@ export type Database = {
           amount: number
           approved_at: string | null
           id: string
+          invoice_email: string | null
+          invoice_sent_at: string | null
           lesson_package_id: string
           lessons_added: boolean | null
+          payment_received_at: string | null
           processed_at: string | null
           processed_by: string | null
           proof_email: string
@@ -342,8 +345,11 @@ export type Database = {
           amount: number
           approved_at?: string | null
           id?: string
+          invoice_email?: string | null
+          invoice_sent_at?: string | null
           lesson_package_id: string
           lessons_added?: boolean | null
+          payment_received_at?: string | null
           processed_at?: string | null
           processed_by?: string | null
           proof_email: string
@@ -357,8 +363,11 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           id?: string
+          invoice_email?: string | null
+          invoice_sent_at?: string | null
           lesson_package_id?: string
           lessons_added?: boolean | null
+          payment_received_at?: string | null
           processed_at?: string | null
           processed_by?: string | null
           proof_email?: string
@@ -470,6 +479,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_payment_proof: {
+        Args: {
+          admin_user_id: string
+          invoice_email?: string
+          payment_proof_id: string
+        }
+        Returns: undefined
+      }
       approve_payment_and_add_lessons: {
         Args: { admin_user_id: string; payment_proof_id: string }
         Returns: undefined
@@ -490,6 +507,14 @@ export type Database = {
           _start: string
         }
         Returns: boolean
+      }
+      mark_invoice_sent: {
+        Args: { admin_user_id: string; payment_proof_id: string }
+        Returns: undefined
+      }
+      mark_payment_received: {
+        Args: { admin_user_id: string; payment_proof_id: string }
+        Returns: undefined
       }
       reject_payment: {
         Args: {

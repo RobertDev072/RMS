@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, addMinutes } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { StudentPaymentStatus } from '@/components/StudentPaymentStatus';
 import { 
   BookOpen, 
   Calendar as CalendarIcon, 
@@ -28,7 +29,8 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  MessageSquare
+  MessageSquare,
+  Package
 } from 'lucide-react';
 
 interface EnhancedStudentDashboardProps {
@@ -332,11 +334,12 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
       <div className="p-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
             <TabsTrigger value="requests">Mijn Verzoeken</TabsTrigger>
             <TabsTrigger value="lessons">Lessen</TabsTrigger>
+            <TabsTrigger value="packages">Pakketten</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -741,6 +744,20 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                       ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="packages" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Mijn Lespakketten
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <StudentPaymentStatus />
               </CardContent>
             </Card>
           </TabsContent>

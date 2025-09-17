@@ -859,6 +859,112 @@ export const useData = () => {
     }
   };
 
+  // Accept payment proof
+  const acceptPaymentProof = async (paymentId: string, invoiceEmail?: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('accept_payment_proof', {
+        payment_proof_id: paymentId,
+        admin_user_id: adminProfile?.id,
+        invoice_email: invoiceEmail
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Betaling geaccepteerd",
+        description: "Factuur kan nu worden verstuurd.",
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij accepteren betaling",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Mark invoice as sent
+  const markInvoiceSent = async (paymentId: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('mark_invoice_sent', {
+        payment_proof_id: paymentId,
+        admin_user_id: adminProfile?.id
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Factuur gemarkeerd als verstuurd",
+        description: "Leerling ziet nu dat de factuur is verstuurd.",
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij markeren factuur",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Mark payment as received
+  const markPaymentReceived = async (paymentId: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('mark_payment_received', {
+        payment_proof_id: paymentId,
+        admin_user_id: adminProfile?.id
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Betaling ontvangen",
+        description: "Het pakket kan nu worden goedgekeurd.",
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij markeren betaling",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   // Approve payment and add lessons
   const approvePaymentAndAddLessons = async (paymentId: string) => {
     try {
@@ -956,6 +1062,9 @@ export const useData = () => {
     updateLessonRequestStatus,
     processPaymentProof,
     updatePaymentStatus,
+    acceptPaymentProof,
+    markInvoiceSent,
+    markPaymentReceived,
     approvePaymentAndAddLessons,
     rejectPayment,
   };

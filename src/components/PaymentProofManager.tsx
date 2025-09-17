@@ -81,6 +81,49 @@ export const PaymentProofManager: React.FC = () => {
     }
   };
 
+  const acceptPayment = async (proofId: string, invoiceEmail?: string) => {
+    try {
+      const { error } = await supabase.rpc('accept_payment_proof', {
+        payment_proof_id: proofId,
+        admin_user_id: user?.id,
+        invoice_email: invoiceEmail
+      });
+
+      if (error) throw error;
+      await fetchPaymentProofs();
+    } catch (error) {
+      console.error('Error accepting payment:', error);
+    }
+  };
+
+  const markInvoiceSent = async (proofId: string) => {
+    try {
+      const { error } = await supabase.rpc('mark_invoice_sent', {
+        payment_proof_id: proofId,
+        admin_user_id: user?.id
+      });
+
+      if (error) throw error;
+      await fetchPaymentProofs();
+    } catch (error) {
+      console.error('Error marking invoice as sent:', error);
+    }
+  };
+
+  const markPaymentReceived = async (proofId: string) => {
+    try {
+      const { error } = await supabase.rpc('mark_payment_received', {
+        payment_proof_id: proofId,
+        admin_user_id: user?.id
+      });
+
+      if (error) throw error;
+      await fetchPaymentProofs();
+    } catch (error) {
+      console.error('Error marking payment as received:', error);
+    }
+  };
+
   const updatePaymentStatus = async (proofId: string, status: string, notes?: string) => {
     try {
       const { error } = await supabase.rpc('update_payment_status', {
@@ -128,8 +171,9 @@ export const PaymentProofManager: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'pending': { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: 'Wacht op Factuur' },
-      'invoice_sent': { color: 'bg-blue-100 text-blue-800', icon: Mail, text: 'Factuur Verstuurd' },
+      'pending': { color: 'bg-yellow-100 text-yellow-800', icon: Clock, text: 'In Behandeling' },
+      'accepted': { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, text: 'Geaccepteerd' },
+      'invoice_sent': { color: 'bg-purple-100 text-purple-800', icon: Mail, text: 'Factuur Verstuurd' },
       'payment_received': { color: 'bg-orange-100 text-orange-800', icon: Euro, text: 'Betaling Ontvangen' },
       'approved': { color: 'bg-green-100 text-green-800', icon: CheckCircle, text: 'Goedgekeurd' },
       'rejected': { color: 'bg-red-100 text-red-800', icon: XCircle, text: 'Afgewezen' }
@@ -149,12 +193,22 @@ export const PaymentProofManager: React.FC = () => {
   const handleStatusChange = async () => {
     if (!selectedProof) return;
 
-    if (newStatus === 'approved' && selectedProof.status === 'payment_received') {
-      await approvePayment(selectedProof.id);
-    } else if (newStatus === 'rejected') {
-      await rejectPayment(selectedProof.id, rejectionReason);
-    } else {
-      await updatePaymentStatus(selectedProof.id, newStatus, adminNotes);
+    try {
+      if (newStatus === 'accepted' && selectedProof.status === 'pending') {
+        await acceptPayment(selectedProof.id);
+      } else if (newStatus === 'invoice_sent' && selectedProof.status === 'accepted') {
+        await markInvoiceSent(selectedProof.id);
+      } else if (newStatus === 'payment_received' && selectedProof.status === 'invoice_sent') {
+        await markPaymentReceived(selectedProof.id);
+      } else if (newStatus === 'approved' && selectedProof.status === 'payment_received') {
+        await approvePayment(selectedProof.id);
+      } else if (newStatus === 'rejected') {
+        await rejectPayment(selectedProof.id, rejectionReason);
+      } else {
+        await updatePaymentStatus(selectedProof.id, newStatus, adminNotes);
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
     }
 
     setSelectedProof(null);
@@ -176,7 +230,7 @@ export const PaymentProofManager: React.FC = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Betalingsverzoeken</h2>
         <Badge variant="outline">
-          {paymentProofs.filter(p => p.status === 'pending').length} nieuw
+          {paymentProofs.filter(p => ['pending', 'accepted'].includes(p.status)).length} te behandelen
         </Badge>
       </div>
 
@@ -262,7 +316,8 @@ export const PaymentProofManager: React.FC = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="pending">Wacht op Factuur</SelectItem>
+                              <SelectItem value="pending">In Behandeling</SelectItem>
+                              <SelectItem value="accepted">Accepteren</SelectItem>
                               <SelectItem value="invoice_sent">Factuur Verstuurd</SelectItem>
                               <SelectItem value="payment_received">Betaling Ontvangen</SelectItem>
                               <SelectItem value="approved">Goedkeuren & Lessen Toevoegen</SelectItem>
