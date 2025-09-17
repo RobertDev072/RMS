@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/hooks/useData';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addMinutes } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { 
@@ -222,40 +222,31 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
         return;
       }
 
-      // Check instructor availability for the requested time
+      // Check instructor availability for the requested interval (avoid overlap with UNavailability)
       const requestedDate = format(lessonForm.requested_date, 'yyyy-MM-dd');
-      const requestedTime = format(lessonForm.requested_date, 'HH:mm:ss');
+      const requestedStartStr = format(lessonForm.requested_date, 'HH:mm:ss');
+      const requestedEnd = addMinutes(lessonForm.requested_date, lessonForm.duration_minutes);
+      const requestedEndStr = format(requestedEnd, 'HH:mm:ss');
       
-      const { data: availability, error: availabilityError } = await supabase
+      const { data: overlappingSlots, error: overlapErr } = await supabase
         .from('instructor_availability')
         .select('*')
         .eq('instructor_id', lessonForm.instructor_id)
         .eq('date', requestedDate)
-        .lte('start_time', requestedTime)
-        .gte('end_time', requestedTime);
+        .lt('start_time', requestedEndStr)
+        .gt('end_time', requestedStartStr);
 
-      if (availabilityError) {
-        console.error('Error checking availability:', availabilityError);
+      if (overlapErr) {
+        console.error('Error checking availability overlap:', overlapErr);
       }
 
-      // Check if there's any availability record that covers this time slot
-      if (availability && availability.length > 0) {
-        // Found a matching time slot - check if instructor is available
-        const slot = availability[0];
-        if (!slot.is_available) {
-          const reason = slot.reason ? ` (${slot.reason})` : '';
-          toast({ 
-            title: "Instructeur niet beschikbaar", 
-            description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip${reason}.`,
-            variant: "destructive" 
-          });
-          return;
-        }
-      } else {
-        // No availability record found for this time - instructor hasn't set availability
+      // Block only if there is an overlapping slot explicitly marked as NOT available
+      const blocking = (overlappingSlots || []).find(s => s.is_available === false);
+      if (blocking) {
+        const reason = blocking.reason ? ` (${blocking.reason})` : '';
         toast({ 
-          title: "Geen beschikbaarheid ingesteld", 
-          description: `${selectedInstructor.profile?.full_name} heeft geen beschikbaarheid ingesteld voor dit tijdstip.`,
+          title: "Instructeur niet beschikbaar", 
+          description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip${reason}.`,
           variant: "destructive" 
         });
         return;
