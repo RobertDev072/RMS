@@ -8,18 +8,18 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/hooks/useData';
 import { useToast } from '@/hooks/use-toast';
-import { Edit, Users, GraduationCap } from 'lucide-react';
+import { Edit, Users, GraduationCap, Info } from 'lucide-react';
 
 export const StudentManager: React.FC = () => {
   const { students, fetchStudents } = useData();
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingStudent, setEditingStudent] = useState<any>(null);
+  const [calculatedLessons, setCalculatedLessons] = useState(0);
   const [form, setForm] = useState({
     full_name: '',
     email: '',
     phone: '',
-    lessons_remaining: 0,
     theory_exam_passed: false,
     license_type: 'B'
   });
@@ -33,23 +33,63 @@ export const StudentManager: React.FC = () => {
       full_name: '',
       email: '',
       phone: '',
-      lessons_remaining: 0,
       theory_exam_passed: false,
       license_type: 'B'
     });
     setEditingStudent(null);
+    setCalculatedLessons(0);
   };
 
-  const handleEdit = (student: any) => {
+  const calculateRemainingLessons = async (studentId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Haal goedgekeurde betalingsbewijzen op
+      const { data: approvedPayments, error: paymentsError } = await supabase
+        .from('payment_proofs')
+        .select('lesson_package_id, lesson_packages(lessons_count)')
+        .eq('student_id', studentId)
+        .eq('status', 'approved');
+
+      if (paymentsError) throw paymentsError;
+
+      // Bereken totaal gekochte lessen
+      const totalPurchased = approvedPayments?.reduce((total, payment) => {
+        return total + (payment.lesson_packages?.lessons_count || 0);
+      }, 0) || 0;
+
+      // Haal voltooide/ingeplande lessen op
+      const { data: lessons, error: lessonsError } = await supabase
+        .from('lessons')
+        .select('id')
+        .eq('student_id', studentId)
+        .in('status', ['completed', 'scheduled']);
+
+      if (lessonsError) throw lessonsError;
+
+      const totalUsed = lessons?.length || 0;
+      const remaining = Math.max(0, totalPurchased - totalUsed);
+      
+      setCalculatedLessons(remaining);
+      return remaining;
+    } catch (error) {
+      console.error('Error calculating lessons:', error);
+      return 0;
+    }
+  };
+
+  const handleEdit = async (student: any) => {
     setEditingStudent(student);
     setForm({
       full_name: student.profile?.full_name || '',
       email: student.profile?.email || '',
       phone: student.profile?.phone || '',
-      lessons_remaining: student.lessons_remaining || 0,
       theory_exam_passed: student.theory_exam_passed || false,
       license_type: student.license_type || 'B'
     });
+    
+    // Bereken automatisch resterende lessen
+    await calculateRemainingLessons(student.id);
     setShowDialog(true);
   };
 
@@ -70,11 +110,11 @@ export const StudentManager: React.FC = () => {
 
         if (profileError) throw profileError;
 
-        // Update student specific data
+        // Update student specific data met automatisch berekende lessen
         const { error: studentError } = await supabase
           .from('students')
           .update({
-            lessons_remaining: form.lessons_remaining,
+            lessons_remaining: calculatedLessons, // Gebruik berekende waarde
             theory_exam_passed: form.theory_exam_passed,
             license_type: form.license_type
           })
@@ -82,7 +122,10 @@ export const StudentManager: React.FC = () => {
 
         if (studentError) throw studentError;
 
-        toast({ title: "Leerling bijgewerkt", description: "De leerling is succesvol bijgewerkt." });
+        toast({ 
+          title: "Leerling bijgewerkt", 
+          description: `Gegevens bijgewerkt. Resterende lessen automatisch ingesteld op ${calculatedLessons}.` 
+        });
       }
 
       setShowDialog(false);
@@ -179,14 +222,20 @@ export const StudentManager: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="lessons_remaining">Resterende Lessen</Label>
-                        <Input
-                          id="lessons_remaining"
-                          type="number"
-                          value={form.lessons_remaining}
-                          onChange={(e) => setForm({...form, lessons_remaining: parseInt(e.target.value) || 0})}
-                          min="0"
-                        />
+                        <Label htmlFor="lessons_remaining">Resterende Lessen (automatisch berekend)</Label>
+                        <div className="relative">
+                          <Input
+                            id="lessons_remaining"
+                            type="number"
+                            value={calculatedLessons}
+                            disabled
+                            className="bg-muted cursor-not-allowed"
+                          />
+                          <Info className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Berekend op basis van gekochte pakketten minus voltooide/ingeplande lessen
+                        </p>
                       </div>
                       <div>
                         <Label htmlFor="license_type">Rijbewijs Type</Label>
