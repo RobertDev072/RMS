@@ -327,6 +327,28 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     }
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      if (!user) return;
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: profileForm.full_name,
+          email: profileForm.email,
+          phone: profileForm.phone,
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Profiel bijgewerkt' });
+      await fetchStudentData();
+    } catch (error) {
+      console.error('Profiel bijwerken mislukt:', error);
+      toast({ title: 'Fout', description: 'Kon profiel niet bijwerken', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -367,8 +389,8 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Resterende Lessen</p>
-                      <p className="text-2xl font-bold">{studentData?.lessons_remaining || 0}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Resterend</p>
+                      <p className="text-2xl font-bold">{remainingAfterPlanned}</p>
                     </div>
                     <BookOpen className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -379,8 +401,8 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Komende Lessen</p>
-                      <p className="text-2xl font-bold">{upcomingLessons.length + acceptedRequestsUpcoming.length}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Gepland</p>
+                      <p className="text-2xl font-bold">{scheduledUpcomingCount}</p>
                     </div>
                     <CalendarIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -404,6 +426,32 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 </CardContent>
               </Card>
             </div>
+
+            {/* Mijn Profiel */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Mijn Profiel</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="full_name">Naam</Label>
+                    <Input id="full_name" value={profileForm.full_name} onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input id="email" type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Telefoon</Label>
+                    <Input id="phone" value={profileForm.phone || ''} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button onClick={handleSaveProfile}>Opslaan</Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Actions */}
             <Card>
@@ -603,7 +651,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 <CardTitle>Komende Rijlessen</CardTitle>
               </CardHeader>
               <CardContent>
-                {upcomingLessons.length === 0 && acceptedRequestsUpcoming.length === 0 ? (
+                {upcomingLessons.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Geen komende lessen ingepland</p>
@@ -622,6 +670,9 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                           <p className="text-sm text-muted-foreground">
                             {lesson.location || 'Locatie wordt nog bepaald'}
                           </p>
+                          {lesson.notes && (
+                            <p className="text-sm text-muted-foreground">Opmerking: {lesson.notes}</p>
+                          )}
                         </div>
                         <Badge variant="default">
                           Ingepland
