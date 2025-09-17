@@ -469,8 +469,8 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                       <LessonRequestCard
                         key={request.id}
                         request={request}
-                        onAccept={handleRequestResponse}
-                        onReject={handleRequestResponse}
+                        onAccept={(id, notes) => handleRequestResponse(id, 'accepted', notes)}
+                        onReject={(id, notes) => handleRequestResponse(id, 'rejected', notes)}
                         userRole="instructor"
                       />
                     ))}

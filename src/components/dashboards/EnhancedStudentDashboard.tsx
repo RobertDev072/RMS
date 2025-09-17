@@ -183,10 +183,21 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     loadCalendarEvents();
   }, [lessons, lessonRequests]);
 
-  const upcomingLessons = lessons.filter(lesson => {
-    const lessonDate = new Date(lesson.scheduled_at);
-    return lessonDate > new Date() && lesson.status === 'scheduled';
-  }).sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+  const upcomingLessons = lessons
+    .filter(lesson => {
+      const lessonDate = new Date(lesson.scheduled_at);
+      return lessonDate > new Date() && lesson.status === 'scheduled';
+    })
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+
+  const acceptedRequestsUpcoming = lessonRequests
+    .filter(req => {
+      const reqDate = new Date(req.requested_date);
+      const isFuture = reqDate > new Date();
+      const isAccepted = req.status && req.status.trim() !== '' && req.status !== 'pending' && req.status !== 'rejected';
+      return isFuture && isAccepted;
+    })
+    .sort((a, b) => new Date(a.requested_date).getTime() - new Date(b.requested_date).getTime());
 
   const handleRequestLesson = async () => {
     try {
@@ -559,7 +570,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 <CardTitle>Komende Rijlessen</CardTitle>
               </CardHeader>
               <CardContent>
-                {upcomingLessons.length === 0 ? (
+                {upcomingLessons.length === 0 && acceptedRequestsUpcoming.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Geen komende lessen ingepland</p>
@@ -567,6 +578,29 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Approved requests (nog geen les record) */}
+                    {acceptedRequestsUpcoming.map((req) => (
+                      <div key={`req-${req.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
+                        <div>
+                          <p className="font-medium">{req.instructor?.profile?.full_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(req.requested_date), 'EEEE d MMMM yyyy - HH:mm', { locale: nl })}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {req.location || 'Locatie wordt nog bepaald'}
+                          </p>
+                          {req.notes && (
+                            <p className="text-sm text-muted-foreground">Opmerking: {req.notes}</p>
+                          )}
+                        </div>
+                        <Badge variant="default">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Goedgekeurd
+                        </Badge>
+                      </div>
+                    ))}
+
+                    {/* Reeds ingeplande lessen */}
                     {upcomingLessons.slice(0, 5).map((lesson) => (
                       <div key={lesson.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
