@@ -14,6 +14,7 @@ import { Calendar } from '@/components/Calendar';
 import { LessonRequestCard } from '@/components/LessonRequestCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useData } from '@/hooks/useData';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -26,7 +27,8 @@ import {
   GraduationCap,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  MessageSquare
 } from 'lucide-react';
 
 interface EnhancedStudentDashboardProps {
@@ -39,6 +41,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
   onLogout,
 }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const {
     lessons,
     instructors,
@@ -183,6 +186,49 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
   const handleRequestLesson = async () => {
     try {
+      // Check instructor availability before submitting request
+      const selectedInstructor = instructors.find(i => i.id === lessonForm.instructor_id);
+      if (!selectedInstructor) {
+        toast({ 
+          title: "Fout", 
+          description: "Selecteer eerst een instructeur.",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Check if requested time is in the future
+      if (lessonForm.requested_date <= new Date()) {
+        toast({ 
+          title: "Fout", 
+          description: "Je kunt alleen lessen in de toekomst aanvragen.",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Check instructor availability for the requested time
+      const requestedDate = format(lessonForm.requested_date, 'yyyy-MM-dd');
+      const requestedTime = format(lessonForm.requested_date, 'HH:mm');
+      
+      const { data: availability } = await supabase
+        .from('instructor_availability')
+        .select('*')
+        .eq('instructor_id', lessonForm.instructor_id)
+        .eq('date', requestedDate)
+        .lte('start_time', requestedTime)
+        .gte('end_time', requestedTime);
+
+      // If there's unavailability data and instructor is not available
+      if (availability && availability.length > 0 && !availability[0].is_available) {
+        toast({ 
+          title: "Instructeur niet beschikbaar", 
+          description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip.`,
+          variant: "destructive" 
+        });
+        return;
+      }
+
       await createLessonRequest({
         instructor_id: lessonForm.instructor_id,
         requested_date: lessonForm.requested_date.toISOString(),
@@ -200,8 +246,18 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
         location: '',
         notes: ''
       });
+      
+      toast({ 
+        title: "Verzoek verzonden", 
+        description: "Je lesverzoek is verzonden naar de instructeur." 
+      });
     } catch (error) {
       console.error('Error in handleRequestLesson:', error);
+      toast({ 
+        title: "Fout", 
+        description: "Er is een fout opgetreden bij het versturen van je verzoek.",
+        variant: "destructive" 
+      });
     }
   };
 
@@ -474,6 +530,21 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                       </div>
                     </DialogContent>
                   </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Feedback van Instructeurs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* TODO: Add lesson feedback display */}
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Feedback wordt hier weergegeven zodra je instructeur deze heeft gegeven</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

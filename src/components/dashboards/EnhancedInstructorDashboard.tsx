@@ -12,8 +12,9 @@ import { useData } from '@/hooks/useData';
 import { Calendar } from '@/components/Calendar';
 import { LessonRequestCard } from '@/components/LessonRequestCard';
 import { AvailabilityManager } from '@/components/AvailabilityManager';
+import { LessonFeedbackManager } from '@/components/LessonFeedbackManager';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, addWeeks, startOfWeek, endOfWeek } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { CalendarDays, Users, AlertCircle, UserPlus, Settings, Clock, Calendar as CalendarIcon } from 'lucide-react';
 
@@ -208,7 +209,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
       <div className="p-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
             <TabsTrigger value="requests">
@@ -216,6 +217,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                 <Badge variant="destructive" className="ml-2">{pendingRequests.length}</Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="availability">Beschikbaarheid</TabsTrigger>
           </TabsList>
 
@@ -434,6 +436,10 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-6">
+            <LessonFeedbackManager />
           </TabsContent>
 
           <TabsContent value="availability" className="space-y-6">

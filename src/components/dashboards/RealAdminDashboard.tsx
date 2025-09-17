@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Users, BookOpen, TrendingUp, LogOut, Euro } from "lucide-react";
 import { useData } from "@/hooks/useData";
 import { PaymentProofManager } from "@/components/PaymentProofManager";
+import { LessonPackageManager } from "@/components/LessonPackageManager";
+import { CarManager } from "@/components/CarManager";
+import { StudentManager } from "@/components/StudentManager";
 
 interface RealAdminDashboardProps {
   userName: string;
@@ -95,8 +98,11 @@ const RealAdminDashboard = ({ userName, onLogout }: RealAdminDashboardProps) => 
 
       <div className="flex-1 space-y-6 p-4">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
+            <TabsTrigger value="packages">Pakketten</TabsTrigger>
+            <TabsTrigger value="cars">Auto's</TabsTrigger>
+            <TabsTrigger value="students">Leerlingen</TabsTrigger>
             <TabsTrigger value="payments">Betalingen</TabsTrigger>
           </TabsList>
 
@@ -265,6 +271,18 @@ const RealAdminDashboard = ({ userName, onLogout }: RealAdminDashboardProps) => 
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="packages">
+            <LessonPackageManager />
+          </TabsContent>
+
+          <TabsContent value="cars">
+            <CarManager />
+          </TabsContent>
+
+          <TabsContent value="students">
+            <StudentManager />
           </TabsContent>
 
           <TabsContent value="payments">

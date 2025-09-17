@@ -46,43 +46,58 @@ export const Calendar = ({
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
   const hours = Array.from({ length: 14 }, (_, i) => i + 8); // 8:00 - 21:00
 
+  // Filter events for instructor view (only show next 2 weeks)
+  const filteredEvents = userRole === 'instructor' 
+    ? events.filter(event => {
+        const eventDate = new Date(event.start);
+        const twoWeeksFromNow = addWeeks(new Date(), 2);
+        return eventDate <= twoWeeksFromNow;
+      })
+    : events;
+
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
+    return filteredEvents.filter(event => {
       const eventDate = parseISO(event.start);
       return isSameDay(eventDate, date);
     });
   };
 
   const getEventStyle = (event: CalendarEvent) => {
-    const baseStyle = "absolute left-0 right-0 mx-1 p-1 rounded text-xs overflow-hidden z-10";
+    const isPast = new Date(event.start) < new Date();
+    let baseClasses = "absolute left-0 right-0 mx-1 p-1 rounded text-xs overflow-hidden z-10 ";
+    
+    // Add strikethrough and opacity for past events (instructor view only)
+    if (userRole === 'instructor' && isPast && event.type === 'lesson') {
+      baseClasses += "line-through opacity-75 ";
+    }
     
     switch (event.type) {
       case 'lesson':
         switch (event.status) {
           case 'scheduled':
-            return cn(baseStyle, "bg-primary text-primary-foreground");
+            return cn(baseClasses, "bg-primary text-primary-foreground");
           case 'completed':
-            return cn(baseStyle, "bg-green-500 text-white");
+            return cn(baseClasses, "bg-green-500 text-white");
           case 'cancelled':
-            return cn(baseStyle, "bg-red-500 text-white");
+            return cn(baseClasses, "bg-red-500 text-white line-through");
           default:
-            return cn(baseStyle, "bg-primary text-primary-foreground");
+            return cn(baseClasses, "bg-primary text-primary-foreground");
         }
       case 'request':
         switch (event.status) {
           case 'pending':
-            return cn(baseStyle, "bg-yellow-400 text-yellow-900 border-2 border-yellow-600");
+            return cn(baseClasses, "bg-yellow-400 text-yellow-900 border-2 border-yellow-600");
           case 'accepted':
-            return cn(baseStyle, "bg-green-400 text-green-900");
+            return cn(baseClasses, "bg-green-400 text-green-900");
           case 'rejected':
-            return cn(baseStyle, "bg-red-400 text-red-900");
+            return cn(baseClasses, "bg-red-400 text-red-900");
           default:
-            return cn(baseStyle, "bg-yellow-400 text-yellow-900");
+            return cn(baseClasses, "bg-yellow-400 text-yellow-900");
         }
       case 'unavailable':
-        return cn(baseStyle, "bg-gray-400 text-white opacity-75");
+        return cn(baseClasses, "bg-gray-400 text-white opacity-75");
       default:
-        return cn(baseStyle, "bg-secondary text-secondary-foreground");
+        return cn(baseClasses, "bg-secondary text-secondary-foreground");
     }
   };
 
