@@ -43,6 +43,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
 
   const [showCarDialog, setShowCarDialog] = useState(false);
   const [showInstructorDialog, setShowInstructorDialog] = useState(false);
+  const [editingCar, setEditingCar] = useState<any>(null);
   const [carForm, setCarForm] = useState({
     license_plate: '',
     brand: '',
@@ -73,16 +74,42 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
   const pendingPayments = paymentProofs.filter(proof => proof.status === 'pending');
 
   const handleAddCar = async () => {
-    const result = await addCar({
-      license_plate: carForm.license_plate,
-      brand: carForm.brand,
-      model: carForm.model,
-      year: carForm.year ? parseInt(carForm.year) : undefined,
-    });
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      if (editingCar) {
+        const { error } = await supabase
+          .from('cars')
+          .update({
+            license_plate: carForm.license_plate,
+            brand: carForm.brand,
+            model: carForm.model,
+            year: carForm.year ? parseInt(carForm.year) : null,
+            is_available: true
+          })
+          .eq('id', editingCar.id);
 
-    if (!result.error) {
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('cars')
+          .insert({
+            license_plate: carForm.license_plate,
+            brand: carForm.brand,
+            model: carForm.model,
+            year: carForm.year ? parseInt(carForm.year) : null,
+            is_available: true
+          });
+
+        if (error) throw error;
+      }
+
       setShowCarDialog(false);
       setCarForm({ license_plate: '', brand: '', model: '', year: '' });
+      setEditingCar(null);
+      fetchCars();
+    } catch (error: any) {
+      console.error('Error saving car:', error);
     }
   };
 
@@ -179,69 +206,121 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
           </Card>
         </div>
 
+        {/* Auto's Beheren */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Auto's Beheren</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Beschikbare Auto's</h3>
+                <Dialog open={showCarDialog} onOpenChange={setShowCarDialog}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Auto Toevoegen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>{editingCar ? 'Auto Bewerken' : 'Nieuwe Auto Toevoegen'}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="license_plate">Kenteken</Label>
+                        <Input
+                          id="license_plate"
+                          value={carForm.license_plate}
+                          onChange={(e) => setCarForm({...carForm, license_plate: e.target.value})}
+                          placeholder="XX-XX-XX"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="brand">Merk</Label>
+                        <Input
+                          id="brand"
+                          value={carForm.brand}
+                          onChange={(e) => setCarForm({...carForm, brand: e.target.value})}
+                          placeholder="BMW"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="model">Model</Label>
+                        <Input
+                          id="model"
+                          value={carForm.model}
+                          onChange={(e) => setCarForm({...carForm, model: e.target.value})}
+                          placeholder="3 Serie"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="year">Jaar</Label>
+                        <Input
+                          id="year"
+                          type="number"
+                          value={carForm.year}
+                          onChange={(e) => setCarForm({...carForm, year: e.target.value})}
+                          placeholder="2023"
+                        />
+                      </div>
+                      <Button onClick={handleAddCar} className="w-full">
+                        {editingCar ? 'Bijwerken' : 'Auto Toevoegen'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {cars.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Car className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nog geen auto's toegevoegd</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cars.map((car) => (
+                    <div key={car.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{car.license_plate}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {car.brand} {car.model} {car.year && `(${car.year})`}
+                        </p>
+                        <Badge variant={car.is_available ? "default" : "secondary"} className="mt-1">
+                          {car.is_available ? 'Beschikbaar' : 'Niet beschikbaar'}
+                        </Badge>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setCarForm({
+                            license_plate: car.license_plate,
+                            brand: car.brand,
+                            model: car.model,
+                            year: car.year?.toString() || '',
+                          });
+                          setEditingCar(car);
+                          setShowCarDialog(true);
+                        }}
+                      >
+                        Bewerken
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle>Snelle Acties</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Dialog open={showCarDialog} onOpenChange={setShowCarDialog}>
-                <DialogTrigger asChild>
-                  <Button className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Auto Toevoegen
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Nieuwe Auto Toevoegen</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="license_plate">Kenteken</Label>
-                      <Input
-                        id="license_plate"
-                        value={carForm.license_plate}
-                        onChange={(e) => setCarForm({...carForm, license_plate: e.target.value})}
-                        placeholder="XX-XX-XX"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="brand">Merk</Label>
-                      <Input
-                        id="brand"
-                        value={carForm.brand}
-                        onChange={(e) => setCarForm({...carForm, brand: e.target.value})}
-                        placeholder="BMW"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="model">Model</Label>
-                      <Input
-                        id="model"
-                        value={carForm.model}
-                        onChange={(e) => setCarForm({...carForm, model: e.target.value})}
-                        placeholder="3 Serie"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="year">Jaar</Label>
-                      <Input
-                        id="year"
-                        type="number"
-                        value={carForm.year}
-                        onChange={(e) => setCarForm({...carForm, year: e.target.value})}
-                        placeholder="2023"
-                      />
-                    </div>
-                    <Button onClick={handleAddCar} className="w-full">
-                      Auto Toevoegen
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Dialog open={showInstructorDialog} onOpenChange={setShowInstructorDialog}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
