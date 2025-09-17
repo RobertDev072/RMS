@@ -79,6 +79,8 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     email: '',
     phone: ''
   });
+  const [purchasedLessons, setPurchasedLessons] = useState(0);
+  const [lessonsUsed, setLessonsUsed] = useState(0);
 
   useEffect(() => {
     if (user?.id) {
@@ -99,6 +101,31 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
       });
     }
   }, [studentData, user]);
+
+  const fetchPurchasedLessonsCount = async () => {
+    try {
+      if (!studentData?.id) return;
+      const { data, error } = await supabase
+        .from('payment_proofs')
+        .select('lesson_package_id, status, lesson_packages(lessons_count)')
+        .eq('student_id', studentData.id)
+        .eq('status', 'approved');
+
+      if (error) throw error;
+      const total = (data || []).reduce((sum: number, row: any) => {
+        const countFromJoin = row.lesson_packages?.lessons_count || 0;
+        const fallback = lessonPackages.find((p) => p.id === row.lesson_package_id)?.lessons_count || 0;
+        return sum + (countFromJoin || fallback);
+      }, 0);
+      setPurchasedLessons(total);
+    } catch (e) {
+      console.error('Kon gekochte lessen niet ophalen:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchPurchasedLessonsCount();
+  }, [studentData?.id]);
 
   const fetchStudentData = async () => {
     try {
@@ -207,6 +234,17 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     })
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
 
+  const dedupeByKey = (items: any[], keyFn: (l: any) => string) => {
+    const map = new Map<string, any>();
+    items.forEach((it) => {
+      const key = keyFn(it);
+      if (!map.has(key)) map.set(key, it);
+    });
+    return Array.from(map.values());
+  };
+
+  const uniqueUpcomingLessons = dedupeByKey(upcomingLessons, (l) => `${l.student_id}-${l.instructor_id}-${new Date(l.scheduled_at).toISOString()}`);
+
   const acceptedRequestsUpcoming = lessonRequests
     .filter(req => {
       const reqDate = new Date(req.requested_date);
@@ -216,8 +254,9 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
     })
     .sort((a, b) => new Date(a.requested_date).getTime() - new Date(b.requested_date).getTime());
 
-  const scheduledUpcomingCount = upcomingLessons.length;
-  const remainingAfterPlanned = Math.max(0, (studentData?.lessons_remaining || 0) - scheduledUpcomingCount);
+  const scheduledUpcomingCount = uniqueUpcomingLessons.length;
+  const computedLessonsUsed = lessons.filter(l => ['scheduled','completed'].includes(l.status)).length;
+  const totalRemaining = Math.max(0, purchasedLessons - computedLessonsUsed);
 
   const handleRequestLesson = async () => {
     try {
@@ -390,7 +429,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Resterend</p>
-                      <p className="text-2xl font-bold">{remainingAfterPlanned}</p>
+                      <p className="text-2xl font-bold">{totalRemaining}</p>
                     </div>
                     <BookOpen className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -660,7 +699,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 ) : (
                   <div className="space-y-4">
                     {/* Reeds ingeplande lessen */}
-                    {upcomingLessons.slice(0, 5).map((lesson) => (
+                    {uniqueUpcomingLessons.slice(0, 5).map((lesson) => (
                       <div key={lesson.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">{lesson.instructor?.profile?.full_name}</p>
