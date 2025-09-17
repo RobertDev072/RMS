@@ -67,8 +67,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
   });
 
   const [packageForm, setPackageForm] = useState({
-    lesson_package_id: '',
-    proof_email: ''
+    lesson_package_id: ''
   });
 
   useEffect(() => {
@@ -213,13 +212,12 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
       await createPaymentProof({
         lesson_package_id: packageForm.lesson_package_id,
         amount: selectedPackage?.price || 0,
-        proof_email: packageForm.proof_email
+        proof_email: studentData?.profile?.email || user?.email || ''
       });
 
       setShowPackageDialog(false);
       setPackageForm({
-        lesson_package_id: '',
-        proof_email: ''
+        lesson_package_id: ''
       });
     } catch (error) {
       console.error('Error in handleRequestPackage:', error);
@@ -459,20 +457,17 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                             </SelectContent>
                           </Select>
                         </div>
-                        <div>
-                          <Label htmlFor="proof_email">E-mailadres voor Betaalbewijs</Label>
-                          <Input
-                            id="proof_email"
-                            type="email"
-                            value={packageForm.proof_email}
-                            onChange={(e) => setPackageForm({...packageForm, proof_email: e.target.value})}
-                            placeholder="jouw@email.nl"
-                          />
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Na het indienen van dit verzoek ontvang je betaalinstructies per e-mail. 
-                          Stuur het betaalbewijs naar de rijschool om je pakket te activeren.
-                        </div>
+                         <div className="bg-muted p-4 rounded-lg">
+                           <h4 className="font-semibold mb-2">Hoe werkt het?</h4>
+                           <ol className="text-sm text-muted-foreground space-y-1">
+                             <li>1. Kies je gewenste lespakket</li>
+                             <li>2. Dien je verzoek in</li>
+                             <li>3. Ontvang een factuur per e-mail</li>
+                             <li>4. Betaal de factuur</li>
+                             <li>5. Stuur het betaalbewijs terug</li>
+                             <li>6. Je lessen worden automatisch toegevoegd</li>
+                           </ol>
+                         </div>
                         <Button onClick={handleRequestPackage} className="w-full">
                           Pakket Aanvragen
                         </Button>

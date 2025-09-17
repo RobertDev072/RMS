@@ -325,11 +325,14 @@ export type Database = {
         Row: {
           admin_notes: string | null
           amount: number
+          approved_at: string | null
           id: string
           lesson_package_id: string
+          lessons_added: boolean | null
           processed_at: string | null
           processed_by: string | null
           proof_email: string
+          rejection_reason: string | null
           status: string
           student_id: string
           submitted_at: string
@@ -337,11 +340,14 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           amount: number
+          approved_at?: string | null
           id?: string
           lesson_package_id: string
+          lessons_added?: boolean | null
           processed_at?: string | null
           processed_by?: string | null
           proof_email: string
+          rejection_reason?: string | null
           status?: string
           student_id: string
           submitted_at?: string
@@ -349,11 +355,14 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           amount?: number
+          approved_at?: string | null
           id?: string
           lesson_package_id?: string
+          lessons_added?: boolean | null
           processed_at?: string | null
           processed_by?: string | null
           proof_email?: string
+          rejection_reason?: string | null
           status?: string
           student_id?: string
           submitted_at?: string
@@ -461,6 +470,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_payment_and_add_lessons: {
+        Args: { admin_user_id: string; payment_proof_id: string }
+        Returns: undefined
+      }
       ensure_profile: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -468,6 +481,23 @@ export type Database = {
       is_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      reject_payment: {
+        Args: {
+          admin_user_id: string
+          payment_proof_id: string
+          reason?: string
+        }
+        Returns: undefined
+      }
+      update_payment_status: {
+        Args: {
+          admin_user_id: string
+          new_status: string
+          notes?: string
+          payment_proof_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

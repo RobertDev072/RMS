@@ -822,6 +822,114 @@ export const useData = () => {
     }
   };
 
+  // Update payment status
+  const updatePaymentStatus = async (paymentId: string, status: string, notes?: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('update_payment_status', {
+        payment_proof_id: paymentId,
+        new_status: status,
+        admin_user_id: adminProfile?.id,
+        notes: notes
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Status bijgewerkt",
+        description: `Betaalstatus is gewijzigd naar ${status}.`,
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij bijwerken status",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Approve payment and add lessons
+  const approvePaymentAndAddLessons = async (paymentId: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('approve_payment_and_add_lessons', {
+        payment_proof_id: paymentId,
+        admin_user_id: adminProfile?.id
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Betaling goedgekeurd",
+        description: "Lessen zijn automatisch toegevoegd aan de leerling.",
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij goedkeuren betaling",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Reject payment
+  const rejectPayment = async (paymentId: string, reason?: string) => {
+    try {
+      const { data: adminUser } = await supabase.auth.getUser();
+      if (!adminUser.user) throw new Error('Not authenticated');
+
+      const { data: adminProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', adminUser.user.id)
+        .single();
+
+      const { error } = await supabase.rpc('reject_payment', {
+        payment_proof_id: paymentId,
+        admin_user_id: adminProfile?.id,
+        reason: reason
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "Betaling afgewezen",
+        description: reason || "Betaling is afgewezen.",
+      });
+      
+      await fetchPaymentProofs();
+    } catch (error: any) {
+      toast({
+        title: "Fout bij afwijzen betaling",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   return {
     lessons,
     students,
@@ -847,5 +955,8 @@ export const useData = () => {
     createPaymentProof,
     updateLessonRequestStatus,
     processPaymentProof,
+    updatePaymentStatus,
+    approvePaymentAndAddLessons,
+    rejectPayment,
   };
 };
