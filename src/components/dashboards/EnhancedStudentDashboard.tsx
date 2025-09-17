@@ -359,7 +359,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Komende Lessen</p>
-                      <p className="text-2xl font-bold">{upcomingLessons.length}</p>
+                      <p className="text-2xl font-bold">{upcomingLessons.length + acceptedRequestsUpcoming.length}</p>
                     </div>
                     <CalendarIcon className="h-8 w-8 text-muted-foreground" />
                   </div>
