@@ -366,11 +366,11 @@ export const useData = () => {
         .from('lesson_requests')
         .select(`
           *,
-          student:students!inner(
-            profile:profiles!inner(full_name, email)
+          student:students(
+            profile:profiles(full_name, email)
           ),
-          instructor:instructors!inner(
-            profile:profiles!inner(full_name, email)
+          instructor:instructors(
+            profile:profiles(full_name, email)
           )
         `)
         .order('created_at', { ascending: false });
