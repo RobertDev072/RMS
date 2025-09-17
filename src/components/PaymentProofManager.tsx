@@ -256,7 +256,9 @@ export const PaymentProofManager: React.FC = () => {
 
                   <div className="flex items-center space-x-3">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Factuur naar: {proof.proof_email}</span>
+                    <span className="text-sm">
+                      Factuur naar: {proof.proof_email || proof.student.profile.email || 'Geen e-mail opgegeven'}
+                    </span>
                   </div>
 
                   <div className="text-sm text-muted-foreground">
