@@ -235,26 +235,22 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
         instructorId: lessonForm.instructor_id
       });
       
-      const { data: overlappingSlots, error: overlapErr } = await supabase
-        .from('instructor_availability')
-        .select('*')
-        .eq('instructor_id', lessonForm.instructor_id)
-        .eq('date', requestedDate)
-        .or(`and(start_time.lte.${requestedStartStr},end_time.gt.${requestedStartStr}),and(start_time.lt.${requestedEndStr},end_time.gte.${requestedEndStr}),and(start_time.gte.${requestedStartStr},end_time.lte.${requestedEndStr})`);
+      // Vraag de server aan of deze interval is toegestaan (RLS-safe)
+      const { data: isAllowed, error: rpcError } = await supabase.rpc('is_instructor_available', {
+        _instructor_id: lessonForm.instructor_id,
+        _date: requestedDate,
+        _start: requestedStartStr,
+        _end: requestedEndStr,
+      });
 
-      if (overlapErr) {
-        console.error('Error checking availability overlap:', overlapErr);
+      if (rpcError) {
+        console.error('RPC is_instructor_available error:', rpcError);
       }
 
-      console.log('Found overlapping slots:', overlappingSlots);
-
-      // Block only if there is an overlapping slot explicitly marked as NOT available
-      const blocking = (overlappingSlots || []).find(s => s.is_available === false);
-      if (blocking) {
-        const reason = blocking.reason ? ` (${blocking.reason})` : '';
+      if (isAllowed === false) {
         toast({ 
           title: "Instructeur niet beschikbaar", 
-          description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip${reason}.`,
+          description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip.`,
           variant: "destructive" 
         });
         return;

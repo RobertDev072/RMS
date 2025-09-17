@@ -482,6 +482,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      is_instructor_available: {
+        Args: {
+          _date: string
+          _end: string
+          _instructor_id: string
+          _start: string
+        }
+        Returns: boolean
+      }
       reject_payment: {
         Args: {
           admin_user_id: string
