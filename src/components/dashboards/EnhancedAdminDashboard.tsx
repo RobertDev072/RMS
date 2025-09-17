@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { LessonPackageManager } from '@/components/LessonPackageManager';
+import { StudentPackageOverview } from '@/components/StudentPackageOverview';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -292,14 +293,14 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Lespakketten Beheren
+                    Leerling Pakketten
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Lespakketten Beheren</DialogTitle>
+                    <DialogTitle>Leerling Pakketten Overzicht</DialogTitle>
                   </DialogHeader>
-                  <LessonPackageManager />
+                  <StudentPackageOverview />
                 </DialogContent>
               </Dialog>
             </div>
