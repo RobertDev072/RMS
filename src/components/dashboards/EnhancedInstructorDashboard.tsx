@@ -125,15 +125,19 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
             availability?.forEach((a: any) => {
               if (!a.is_available) {
-                const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
-                const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
-                events.push({
-                  id: `unavail-${a.id}`,
-                  title: `Niet beschikbaar`,
-                  start: startISO,
-                  end: endISO,
-                  type: 'unavailable'
-                });
+                try {
+                  const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
+                  const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
+                  events.push({
+                    id: `unavail-${a.id}`,
+                    title: `Niet beschikbaar`,
+                    start: startISO,
+                    end: endISO,
+                    type: 'unavailable'
+                  });
+                } catch (error) {
+                  console.error('Error parsing availability date/time:', a, error);
+                }
               }
             });
           }
@@ -154,6 +158,13 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
     const today = new Date().toDateString();
     const lessonDate = new Date(lesson.scheduled_at).toDateString();
     return lessonDate === today;
+  });
+
+  // Also get accepted lesson requests for today
+  const todayAcceptedRequests = lessonRequests.filter(request => {
+    const today = new Date().toDateString();
+    const requestDate = new Date(request.requested_date).toDateString();
+    return requestDate === today && (request.status === 'accepted' || request.status.toLowerCase().includes('goedgekeurd'));
   });
 
   const pendingRequests = lessonRequests.filter(request => request.status === 'pending');
@@ -229,7 +240,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Lessen Vandaag</p>
-                      <p className="text-2xl font-bold">{todayLessons.length}</p>
+                      <p className="text-2xl font-bold">{todayLessons.length + todayAcceptedRequests.length}</p>
                     </div>
                     <CalendarDays className="h-8 w-8 text-muted-foreground" />
                   </div>
@@ -367,15 +378,16 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                 <CardTitle>Planning Vandaag</CardTitle>
               </CardHeader>
               <CardContent>
-                {todayLessons.length === 0 ? (
+                {todayLessons.length === 0 && todayAcceptedRequests.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>Geen lessen ingepland voor vandaag</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {/* Show actual lessons */}
                     {todayLessons.map((lesson) => (
-                      <div key={lesson.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div key={`lesson-${lesson.id}`} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">{lesson.student?.profile?.full_name}</p>
                           <p className="text-sm text-muted-foreground">
@@ -393,6 +405,32 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                           {lesson.status === 'completed' && 'Voltooid'}
                           {lesson.status === 'cancelled' && 'Geannuleerd'}
                           {lesson.status === 'no_show' && 'Niet verschenen'}
+                        </Badge>
+                      </div>
+                    ))}
+                    
+                    {/* Show accepted lesson requests */}
+                    {todayAcceptedRequests.map((request) => (
+                      <div key={`request-${request.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-green-50">
+                        <div>
+                          <p className="font-medium">{request.student?.profile?.full_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(request.requested_date), 'HH:mm', { locale: nl })} - 
+                            {request.location || 'Locatie niet opgegeven'}
+                          </p>
+                          {request.notes && (
+                            <p className="text-sm text-muted-foreground">
+                              Notitie: {request.notes}
+                            </p>
+                          )}
+                          {request.instructor_notes && (
+                            <p className="text-sm text-green-700">
+                              Instructeur notitie: {request.instructor_notes}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant="default" className="bg-green-600">
+                          Goedgekeurd
                         </Badge>
                       </div>
                     ))}

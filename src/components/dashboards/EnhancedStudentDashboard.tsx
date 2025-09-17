@@ -157,15 +157,19 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
       availability?.forEach((a: any) => {
         if (!a.is_available) {
-          const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
-          const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
-          events.push({
-            id: `unavail-${a.id}`,
-            title: `Niet beschikbaar - ${a.instructor?.profile?.full_name || 'Instructeur'}`,
-            start: startISO,
-            end: endISO,
-            type: 'unavailable'
-          });
+          try {
+            const startISO = new Date(`${a.date}T${a.start_time}:00`).toISOString();
+            const endISO = new Date(`${a.date}T${a.end_time}:00`).toISOString();
+            events.push({
+              id: `unavail-${a.id}`,
+              title: `Niet beschikbaar - ${a.instructor?.profile?.full_name || 'Instructeur'}`,
+              start: startISO,
+              end: endISO,
+              type: 'unavailable'
+            });
+          } catch (error) {
+            console.error('Error parsing availability date/time:', a, error);
+          }
         }
       });
     } catch (e) {
