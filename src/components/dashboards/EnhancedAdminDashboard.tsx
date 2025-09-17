@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Car, CheckCircle, Clock, Plus } from 'lucide-react';
+import { Calendar, Users, Car, CheckCircle, Clock, Plus, Settings } from 'lucide-react';
 import { useData } from '@/hooks/useData';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -12,6 +12,7 @@ import { StudentPackageOverview } from '@/components/StudentPackageOverview';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useNavigate } from 'react-router-dom';
 
 interface EnhancedAdminDashboardProps {
   userName: string;
@@ -22,6 +23,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
   userName,
   onLogout,
 }) => {
+  const navigate = useNavigate();
   const {
     lessons,
     students,
@@ -41,15 +43,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
     processPaymentProof,
   } = useData();
 
-  const [showCarDialog, setShowCarDialog] = useState(false);
   const [showInstructorDialog, setShowInstructorDialog] = useState(false);
-  const [editingCar, setEditingCar] = useState<any>(null);
-  const [carForm, setCarForm] = useState({
-    license_plate: '',
-    brand: '',
-    model: '',
-    year: '',
-  });
   const [instructorForm, setInstructorForm] = useState({
     email: '',
     full_name: '',
@@ -72,46 +66,6 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
   });
 
   const pendingPayments = paymentProofs.filter(proof => proof.status === 'pending');
-
-  const handleAddCar = async () => {
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      if (editingCar) {
-        const { error } = await supabase
-          .from('cars')
-          .update({
-            license_plate: carForm.license_plate,
-            brand: carForm.brand,
-            model: carForm.model,
-            year: carForm.year ? parseInt(carForm.year) : null,
-            is_available: true
-          })
-          .eq('id', editingCar.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('cars')
-          .insert({
-            license_plate: carForm.license_plate,
-            brand: carForm.brand,
-            model: carForm.model,
-            year: carForm.year ? parseInt(carForm.year) : null,
-            is_available: true
-          });
-
-        if (error) throw error;
-      }
-
-      setShowCarDialog(false);
-      setCarForm({ license_plate: '', brand: '', model: '', year: '' });
-      setEditingCar(null);
-      fetchCars();
-    } catch (error: any) {
-      console.error('Error saving car:', error);
-    }
-  };
 
   const handleCreateInstructor = async () => {
     const result = await createInstructor({
@@ -169,7 +123,10 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card 
+            className="cursor-pointer hover:bg-muted/50 transition-colors"
+            onClick={() => navigate('/students')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -183,12 +140,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
 
           <Card 
             className="cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => {
-              const carsSection = document.getElementById('cars-management');
-              if (carsSection) {
-                carsSection.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
+            onClick={() => navigate('/cars')}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -214,121 +166,30 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
           </Card>
         </div>
 
-        {/* Auto's Beheren */}
-        <Card id="cars-management">
-          <CardHeader>
-            <CardTitle>Auto's Beheren</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Beschikbare Auto's</h3>
-                <Dialog open={showCarDialog} onOpenChange={setShowCarDialog}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Auto Toevoegen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{editingCar ? 'Auto Bewerken' : 'Nieuwe Auto Toevoegen'}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="license_plate">Kenteken</Label>
-                        <Input
-                          id="license_plate"
-                          value={carForm.license_plate}
-                          onChange={(e) => setCarForm({...carForm, license_plate: e.target.value})}
-                          placeholder="XX-XX-XX"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="brand">Merk</Label>
-                        <Input
-                          id="brand"
-                          value={carForm.brand}
-                          onChange={(e) => setCarForm({...carForm, brand: e.target.value})}
-                          placeholder="BMW"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="model">Model</Label>
-                        <Input
-                          id="model"
-                          value={carForm.model}
-                          onChange={(e) => setCarForm({...carForm, model: e.target.value})}
-                          placeholder="3 Serie"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="year">Jaar</Label>
-                        <Input
-                          id="year"
-                          type="number"
-                          value={carForm.year}
-                          onChange={(e) => setCarForm({...carForm, year: e.target.value})}
-                          placeholder="2023"
-                        />
-                      </div>
-                      <Button onClick={handleAddCar} className="w-full">
-                        {editingCar ? 'Bijwerken' : 'Auto Toevoegen'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {cars.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Car className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nog geen auto's toegevoegd</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cars.map((car) => (
-                    <div key={car.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{car.license_plate}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {car.brand} {car.model} {car.year && `(${car.year})`}
-                        </p>
-                        <Badge variant={car.is_available ? "default" : "secondary"} className="mt-1">
-                          {car.is_available ? 'Beschikbaar' : 'Niet beschikbaar'}
-                        </Badge>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => {
-                          setCarForm({
-                            license_plate: car.license_plate,
-                            brand: car.brand,
-                            model: car.model,
-                            year: car.year?.toString() || '',
-                          });
-                          setEditingCar(car);
-                          setShowCarDialog(true);
-                        }}
-                      >
-                        Bewerken
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle>Snelle Acties</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button 
+                onClick={() => navigate('/cars')} 
+                className="w-full flex items-center gap-2"
+              >
+                <Car className="h-4 w-4" />
+                Auto's Beheren
+              </Button>
+
+              <Button 
+                onClick={() => navigate('/students')} 
+                variant="outline" 
+                className="w-full flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Leerlingen Beheren
+              </Button>
+
               <Dialog open={showInstructorDialog} onOpenChange={setShowInstructorDialog}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
@@ -375,7 +236,9 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
                   </div>
                 </DialogContent>
               </Dialog>
+            </div>
 
+            <div className="mt-4">
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="w-full">
