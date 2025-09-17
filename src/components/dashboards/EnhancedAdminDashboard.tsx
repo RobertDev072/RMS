@@ -323,6 +323,9 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
                         {proof.lesson_package?.name} - €{proof.amount}
                       </p>
                       <p className="text-sm text-muted-foreground">
+                        Factuur naar: {proof.proof_email}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
                         Ingediend: {format(new Date(proof.submitted_at), 'dd MMM yyyy', { locale: nl })}
                       </p>
                     </div>
