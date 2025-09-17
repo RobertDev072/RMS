@@ -224,9 +224,9 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
       // Check instructor availability for the requested time
       const requestedDate = format(lessonForm.requested_date, 'yyyy-MM-dd');
-      const requestedTime = format(lessonForm.requested_date, 'HH:mm');
+      const requestedTime = format(lessonForm.requested_date, 'HH:mm:ss');
       
-      const { data: availability } = await supabase
+      const { data: availability, error: availabilityError } = await supabase
         .from('instructor_availability')
         .select('*')
         .eq('instructor_id', lessonForm.instructor_id)
@@ -234,11 +234,28 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
         .lte('start_time', requestedTime)
         .gte('end_time', requestedTime);
 
-      // If there's unavailability data and instructor is not available
-      if (availability && availability.length > 0 && !availability[0].is_available) {
+      if (availabilityError) {
+        console.error('Error checking availability:', availabilityError);
+      }
+
+      // Check if there's any availability record that covers this time slot
+      if (availability && availability.length > 0) {
+        // Found a matching time slot - check if instructor is available
+        const slot = availability[0];
+        if (!slot.is_available) {
+          const reason = slot.reason ? ` (${slot.reason})` : '';
+          toast({ 
+            title: "Instructeur niet beschikbaar", 
+            description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip${reason}.`,
+            variant: "destructive" 
+          });
+          return;
+        }
+      } else {
+        // No availability record found for this time - instructor hasn't set availability
         toast({ 
-          title: "Instructeur niet beschikbaar", 
-          description: `${selectedInstructor.profile?.full_name} is niet beschikbaar op dit tijdstip.`,
+          title: "Geen beschikbaarheid ingesteld", 
+          description: `${selectedInstructor.profile?.full_name} heeft geen beschikbaarheid ingesteld voor dit tijdstip.`,
           variant: "destructive" 
         });
         return;
