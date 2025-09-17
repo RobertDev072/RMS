@@ -215,11 +215,26 @@ export const useData = () => {
   // Fetch lesson packages
   const fetchLessonPackages = async () => {
     try {
-      const { data, error } = await supabase
+      // Check if user is admin to show all packages or just active ones
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      const isAdmin = profile?.role === 'admin';
+      
+      let query = supabase
         .from('lesson_packages')
         .select('*')
-        .eq('is_active', true)
         .order('price', { ascending: true });
+
+      // Non-admins only see active packages
+      if (!isAdmin) {
+        query = query.eq('is_active', true);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching lesson packages:', error);
