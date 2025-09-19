@@ -220,7 +220,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
       <div className="p-4 md:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
+          <TabsList className="hidden lg:grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
             <TabsTrigger value="requests">
