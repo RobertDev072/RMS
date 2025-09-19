@@ -179,21 +179,29 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
   const handleCreateStudent = async () => {
     // Validate required fields
     if (!studentForm.email || !studentForm.full_name || !studentForm.password) {
-      toast({
+      return toast({
         title: "Velden ontbreken",
         description: "Email, naam en wachtwoord zijn verplicht.",
         variant: "destructive",
       });
-      return;
     }
 
     if (studentForm.password.length < 6) {
-      toast({
+      return toast({
         title: "Wachtwoord te kort",
         description: "Wachtwoord moet minimaal 6 karakters lang zijn.",
         variant: "destructive",
       });
-      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(studentForm.email.trim())) {
+      return toast({
+        title: "Ongeldig e-mailadres",
+        description: "Voer een geldig e-mailadres in.",
+        variant: "destructive",
+      });
     }
 
     const result = await createStudent({
@@ -207,7 +215,11 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
     if (!result.error && result.credentials) {
       setCredentials(result.credentials);
       setStudentForm({ email: '', full_name: '', phone: '', license_type: 'B', password: '' });
-      setShowStudentDialog(false);
+      // Keep dialog open to show credentials
+      toast({
+        title: "Leerling aangemaakt!",
+        description: "Geef de inloggegevens hieronder door aan de leerling.",
+      });
     }
   };
 

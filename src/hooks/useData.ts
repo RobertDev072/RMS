@@ -506,38 +506,47 @@ export const useData = () => {
     password: string;
   }) => {
     try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(studentData.email.trim())) {
+        toast({
+          title: "Ongeldig e-mailadres",
+          description: "Voer een geldig e-mailadres in.",
+          variant: "destructive",
+        });
+        return { error: new Error('Invalid email'), credentials: null };
+      }
+
       // Use edge function to create student with admin privileges
-      const { data, error } = await supabase.functions.invoke('create-student', {
-        body: {
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/create-student`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabase.supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: studentData.email.trim().toLowerCase(),
           password: studentData.password,
           full_name: studentData.full_name,
           phone: studentData.phone,
           license_type: studentData.license_type || 'B'
-        }
+        })
       });
 
-      if (error) {
-        toast({
-          title: "Fout bij aanmaken leerling",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error, credentials: null };
-      }
+      const data = await response.json();
 
-      if (data?.error) {
+      if (!response.ok || data.error) {
         toast({
           title: "Fout bij aanmaken leerling",
-          description: data.error,
+          description: data.error || "Onbekende fout",
           variant: "destructive",
         });
-        return { error: new Error(data.error), credentials: null };
+        return { error: new Error(data.error || "Request failed"), credentials: null };
       }
 
       toast({
         title: "Leerling aangemaakt",
-        description: `Leerling ${studentData.full_name} is aangemaakt en kan direct inloggen.`,
+        description: `${studentData.full_name} kan nu direct inloggen met het opgegeven wachtwoord.`,
       });
 
       await fetchStudents();
@@ -549,9 +558,10 @@ export const useData = () => {
         }
       };
     } catch (error: any) {
+      console.error('Error in createStudent:', error);
       toast({
         title: "Fout bij aanmaken leerling",
-        description: error.message,
+        description: error.message || "Netwerkfout - probeer opnieuw",
         variant: "destructive",
       });
       return { error, credentials: null };
