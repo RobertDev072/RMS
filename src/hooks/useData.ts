@@ -503,34 +503,41 @@ export const useData = () => {
     full_name: string;
     phone?: string;
     license_type?: string;
+    password: string;
   }) => {
     try {
-      // First create user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: studentData.email,
-        password: 'TempPass123!', // Temporary password
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            full_name: studentData.full_name,
-            role: 'student'
-          },
-          skipConfirmation: true
+      // Use edge function to create student with admin privileges
+      const { data, error } = await supabase.functions.invoke('create-student', {
+        body: {
+          email: studentData.email.trim().toLowerCase(),
+          password: studentData.password,
+          full_name: studentData.full_name,
+          phone: studentData.phone,
+          license_type: studentData.license_type || 'B'
         }
       });
 
-      if (authError) {
+      if (error) {
         toast({
           title: "Fout bij aanmaken leerling",
-          description: authError.message,
+          description: error.message,
           variant: "destructive",
         });
-        return { error: authError, credentials: null };
+        return { error, credentials: null };
+      }
+
+      if (data?.error) {
+        toast({
+          title: "Fout bij aanmaken leerling",
+          description: data.error,
+          variant: "destructive",
+        });
+        return { error: new Error(data.error), credentials: null };
       }
 
       toast({
         title: "Leerling aangemaakt",
-        description: `Leerling ${studentData.full_name} is aangemaakt met tijdelijk wachtwoord: TempPass123!`,
+        description: `Leerling ${studentData.full_name} is aangemaakt en kan direct inloggen.`,
       });
 
       await fetchStudents();
@@ -538,7 +545,7 @@ export const useData = () => {
         error: null, 
         credentials: {
           email: studentData.email,
-          password: 'TempPass123!'
+          password: studentData.password
         }
       };
     } catch (error: any) {

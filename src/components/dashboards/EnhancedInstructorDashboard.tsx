@@ -50,7 +50,8 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
     email: '',
     full_name: '',
     phone: '',
-    license_type: 'B'
+    license_type: 'B',
+    password: ''
   });
   
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
@@ -176,16 +177,36 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
   const pendingRequests = lessonRequests.filter(request => request.status === 'pending');
 
   const handleCreateStudent = async () => {
+    // Validate required fields
+    if (!studentForm.email || !studentForm.full_name || !studentForm.password) {
+      toast({
+        title: "Velden ontbreken",
+        description: "Email, naam en wachtwoord zijn verplicht.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (studentForm.password.length < 6) {
+      toast({
+        title: "Wachtwoord te kort",
+        description: "Wachtwoord moet minimaal 6 karakters lang zijn.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const result = await createStudent({
       email: studentForm.email,
       full_name: studentForm.full_name,
       phone: studentForm.phone,
       license_type: studentForm.license_type,
+      password: studentForm.password,
     });
 
     if (!result.error && result.credentials) {
       setCredentials(result.credentials);
-      setStudentForm({ email: '', full_name: '', phone: '', license_type: 'B' });
+      setStudentForm({ email: '', full_name: '', phone: '', license_type: 'B', password: '' });
       setShowStudentDialog(false);
     }
   };
@@ -334,6 +355,17 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                               <SelectItem value="C">C (Vrachtwagen)</SelectItem>
                             </SelectContent>
                           </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="student_password">Wachtwoord</Label>
+                          <Input
+                            id="student_password"
+                            type="password"
+                            value={studentForm.password}
+                            onChange={(e) => setStudentForm({...studentForm, password: e.target.value})}
+                            placeholder="Minimaal 6 karakters"
+                            minLength={6}
+                          />
                         </div>
                         <Button onClick={handleCreateStudent} className="w-full">
                           Leerling Aanmaken
