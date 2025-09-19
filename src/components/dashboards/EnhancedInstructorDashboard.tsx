@@ -45,6 +45,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
   const [showStudentDialog, setShowStudentDialog] = useState(false);
   const [credentials, setCredentials] = useState<{email: string; password: string} | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const [studentForm, setStudentForm] = useState({
     email: '',
     full_name: '',
@@ -214,10 +215,12 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
         userName={userName}
         userRole="instructor"
         onLogout={onLogout}
+        onTabChange={setActiveTab}
       />
 
       <div className="p-4 md:p-6">
         <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
           <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
