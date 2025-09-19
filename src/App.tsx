@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Seed from "./pages/Seed";
+import CreateTestUsers from "./pages/CreateTestUsers";
 import CarsManagement from "./pages/CarsManagement";
 import StudentsManagement from "./pages/StudentsManagement";
 import { ProfilePage } from "./components/ProfilePage";
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/seed" element={<Seed />} />
+          <Route path="/create-users" element={<CreateTestUsers />} />
           <Route path="/cars" element={<CarsManagement />} />
           <Route path="/students" element={<StudentsManagement />} />
           <Route path="/profile" element={<ProfilePage />} />
