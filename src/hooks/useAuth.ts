@@ -34,11 +34,11 @@ export const useAuth = () => {
               // First try to ensure profile exists (for existing users)
               await supabase.rpc('ensure_profile');
               
-              const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
+            const { data: profileData, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .maybeSingle();
 
               if (error) {
                 console.error('Error fetching profile:', error);
@@ -74,7 +74,7 @@ export const useAuth = () => {
               .from('profiles')
               .select('*')
               .eq('user_id', session.user.id)
-              .single();
+              .maybeSingle();
 
             if (error) {
               console.error('Error fetching profile:', error);
