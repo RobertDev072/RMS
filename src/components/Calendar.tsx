@@ -89,7 +89,7 @@ export const Calendar = ({
           return cn(baseClasses, "bg-yellow-400 text-yellow-900 border-2 border-yellow-600");
         } else if (event.status === 'rejected') {
           return cn(baseClasses, "bg-red-400 text-red-900");
-        } else if (event.status === 'accepted' || (event.status && event.status.trim() !== '' && event.status !== 'pending' && event.status !== 'rejected')) {
+        } else if (event.status === 'accepted' || (typeof event.status === 'string' && event.status.trim() !== '' && event.status !== 'pending' && event.status !== 'rejected')) {
           // Treat any non-empty status that's not pending/rejected as accepted/approved
           return cn(baseClasses, "bg-green-400 text-green-900");
         } else {
@@ -267,7 +267,7 @@ export const Calendar = ({
                             event.status === 'accepted' ? 'Geaccepteerd' :
                             event.status === 'completed' ? 'Voltooid' :
                             event.status === 'scheduled' ? 'Ingepland' :
-                            event.status.trim() !== '' ? `Status: ${event.status}` : 'Wachtend'}
+                           (typeof event.status === 'string' && event.status.trim() !== '') ? `Status: ${event.status}` : 'Wachtend'}
                          </Badge>
                        )
                      )}
