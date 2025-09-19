@@ -491,10 +491,13 @@ export const useData = () => {
         email: studentData.email,
         password: 'TempPass123!', // Temporary password
         options: {
+          emailRedirectTo: undefined, // Disable email redirect
           data: {
             full_name: studentData.full_name,
             role: 'student'
-          }
+          },
+          // Skip email confirmation for instructor-created accounts
+          skipConfirmation: true
         }
       });
 
