@@ -49,6 +49,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
     email: '',
     full_name: '',
     phone: '',
+    password: '',
   });
 
   useEffect(() => {
@@ -69,15 +70,25 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
   const pendingPayments = paymentProofs.filter(proof => proof.status === 'pending');
 
   const handleCreateInstructor = async () => {
+    if (!instructorForm.password || instructorForm.password.length < 6) {
+      toast({
+        title: "Wachtwoord vereist",
+        description: "Voer een wachtwoord in van minimaal 6 karakters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const result = await createInstructor({
       email: instructorForm.email,
       full_name: instructorForm.full_name,
       phone: instructorForm.phone,
+      password: instructorForm.password,
     });
 
     if (!result.error) {
       setShowInstructorDialog(false);
-      setInstructorForm({ email: '', full_name: '', phone: '' });
+      setInstructorForm({ email: '', full_name: '', phone: '', password: '' });
     }
   };
 
@@ -222,6 +233,17 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
                         value={instructorForm.phone}
                         onChange={(e) => setInstructorForm({...instructorForm, phone: e.target.value})}
                         placeholder="06-12345678"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="instructor_password">Wachtwoord</Label>
+                      <Input
+                        id="instructor_password"
+                        type="password"
+                        value={instructorForm.password}
+                        onChange={(e) => setInstructorForm({...instructorForm, password: e.target.value})}
+                        placeholder="Minimaal 6 karakters"
+                        minLength={6}
                       />
                     </div>
                     <Button onClick={handleCreateInstructor} className="w-full">

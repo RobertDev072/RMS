@@ -538,17 +538,20 @@ export const useData = () => {
     email: string;
     full_name: string;
     phone?: string;
+    password: string;
     specializations?: string[];
   }) => {
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: instructorData.email,
-        password: 'InstructorPass123!',
+        password: instructorData.password,
         options: {
+          emailRedirectTo: undefined,
           data: {
             full_name: instructorData.full_name,
             role: 'instructor'
-          }
+          },
+          skipConfirmation: true
         }
       });
 
@@ -563,7 +566,7 @@ export const useData = () => {
 
       toast({
         title: "Instructeur aangemaakt",
-        description: `Instructeur ${instructorData.full_name} is aangemaakt.`,
+        description: `Instructeur ${instructorData.full_name} is aangemaakt met het opgegeven wachtwoord.`,
       });
 
       await fetchInstructors();
