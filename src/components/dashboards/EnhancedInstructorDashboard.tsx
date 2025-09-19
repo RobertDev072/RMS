@@ -227,7 +227,10 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
               )}
             </TabsTrigger>
             <TabsTrigger value="feedback">Feedback</TabsTrigger>
-            <TabsTrigger value="availability">Beschikbaarheid</TabsTrigger>
+            <TabsTrigger value="availability">
+              <span className="hidden sm:inline">Beschikbaarheid</span>
+              <span className="sm:hidden">Schema</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
