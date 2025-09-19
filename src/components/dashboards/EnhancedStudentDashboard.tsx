@@ -261,6 +261,16 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
   const handleRequestLesson = async () => {
     try {
+      // Check if student has remaining lessons before making request
+      if (totalRemaining <= 0) {
+        toast({ 
+          title: "Geen lessen beschikbaar", 
+          description: "Je hebt geen lessen meer over. Koop eerst een lespakket om lessen aan te kunnen vragen.",
+          variant: "destructive" 
+        });
+        return;
+      }
+
       // Check instructor availability before submitting request
       const selectedInstructor = instructors.find(i => i.id === lessonForm.instructor_id);
       if (!selectedInstructor) {
@@ -490,14 +500,27 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
             <Card>
               <CardHeader>
                 <CardTitle>Snelle Acties</CardTitle>
+                {totalRemaining <= 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-yellow-800">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">
+                        Je hebt geen lessen meer over. Koop een lespakket om lessen aan te kunnen vragen.
+                      </span>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Dialog open={showLessonDialog} onOpenChange={setShowLessonDialog}>
                     <DialogTrigger asChild>
-                      <Button className="w-full">
+                      <Button 
+                        className="w-full" 
+                        disabled={totalRemaining <= 0}
+                      >
                         <Plus className="h-4 w-4 mr-2" />
-                        Rijles Aanvragen
+                        {totalRemaining <= 0 ? 'Geen Lessen Beschikbaar' : 'Rijles Aanvragen'}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">

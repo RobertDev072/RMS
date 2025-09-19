@@ -652,6 +652,16 @@ export const useData = () => {
         throw new Error('Student niet gevonden');
       }
 
+      // Check if student has available lessons
+      if (!studentData.lessons_remaining || studentData.lessons_remaining <= 0) {
+        toast({
+          title: "Geen lessen beschikbaar",
+          description: "Je hebt geen lessen meer over. Koop eerst een lespakket om lessen aan te kunnen vragen.",
+          variant: "destructive",
+        });
+        return { error: new Error('Geen lessen beschikbaar') };
+      }
+
       const { error } = await supabase
         .from('lesson_requests')
         .insert([{
@@ -1054,6 +1064,39 @@ export const useData = () => {
     }
   };
 
+  // Delete lesson package
+  const deleteLessonPackage = async (packageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lesson_packages')
+        .delete()
+        .eq('id', packageId);
+
+      if (error) {
+        toast({
+          title: "Fout bij verwijderen pakket",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { error };
+      }
+
+      toast({
+        title: "Pakket verwijderd",
+        description: "Het lespakket is succesvol verwijderd.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Fout bij verwijderen pakket",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   return {
     lessons,
     students,
@@ -1085,5 +1128,6 @@ export const useData = () => {
     markPaymentReceived,
     approvePaymentAndAddLessons,
     rejectPayment,
+    deleteLessonPackage,
   };
 };

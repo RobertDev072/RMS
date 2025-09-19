@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Edit, Plus, Package } from 'lucide-react';
 
 export const LessonPackageManager: React.FC = () => {
-  const { lessonPackages, fetchLessonPackages } = useData();
+  const { lessonPackages, fetchLessonPackages, deleteLessonPackage } = useData();
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingPackage, setEditingPackage] = useState<any>(null);
@@ -36,6 +36,15 @@ export const LessonPackageManager: React.FC = () => {
       is_active: true
     });
     setEditingPackage(null);
+  };
+
+  const handleDelete = async (pkg: any) => {
+    if (confirm(`Weet je zeker dat je "${pkg.name}" wilt verwijderen?`)) {
+      const result = await deleteLessonPackage(pkg.id);
+      if (!result.error) {
+        fetchLessonPackages();
+      }
+    }
   };
 
   const handleEdit = (pkg: any) => {
@@ -200,10 +209,19 @@ export const LessonPackageManager: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleEdit(pkg)}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Bewerken
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(pkg)}>
+                    <Edit className="h-4 w-4 mr-1" />
+                    Bewerken
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    onClick={() => handleDelete(pkg)}
+                  >
+                    Verwijderen
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
