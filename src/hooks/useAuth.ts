@@ -104,11 +104,12 @@ export const useAuth = () => {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: undefined,
           data: {
             full_name: fullName,
             role: role
-          }
+          },
+          skipConfirmation: true
         }
       });
 
@@ -123,7 +124,7 @@ export const useAuth = () => {
 
       toast({
         title: "Registratie succesvol",
-        description: "Controleer je e-mail voor verificatie.",
+        description: "Account is direct geactiveerd en klaar voor gebruik.",
       });
 
       return { error: null };
