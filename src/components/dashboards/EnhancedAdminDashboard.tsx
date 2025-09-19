@@ -115,15 +115,15 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
 
       <div className="p-4 md:p-6 space-y-6">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Lessen Vandaag</p>
-                  <p className="text-2xl font-bold">{todayLessons.length}</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Lessen Vandaag</p>
+                  <p className="text-xl md:text-2xl font-bold">{todayLessons.length}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-muted-foreground" />
+                <Calendar className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -132,13 +132,13 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={() => navigate('/students')}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Totaal Leerlingen</p>
-                  <p className="text-2xl font-bold">{students.length}</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Totaal Leerlingen</p>
+                  <p className="text-xl md:text-2xl font-bold">{students.length}</p>
                 </div>
-                <Users className="h-8 w-8 text-muted-foreground" />
+                <Users className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -147,25 +147,25 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             className="cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={() => navigate('/cars')}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Auto's Beschikbaar</p>
-                  <p className="text-2xl font-bold">{cars.filter(car => car.is_available).length}</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Auto's Beschikbaar</p>
+                  <p className="text-xl md:text-2xl font-bold">{cars.filter(car => car.is_available).length}</p>
                 </div>
-                <Car className="h-8 w-8 text-muted-foreground" />
+                <Car className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Openstaande Betalingen</p>
-                  <p className="text-2xl font-bold">{pendingPayments.length}</p>
+                  <p className="text-xs md:text-sm font-medium text-muted-foreground">Openstaande Betalingen</p>
+                  <p className="text-xl md:text-2xl font-bold">{pendingPayments.length}</p>
                 </div>
-                <Clock className="h-8 w-8 text-muted-foreground" />
+                <Clock className="h-6 w-6 md:h-8 md:w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -177,10 +177,10 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             <CardTitle>Snelle Acties</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
               <Button 
                 onClick={() => navigate('/cars')} 
-                className="w-full flex items-center gap-2"
+                className="w-full flex items-center gap-2 text-sm"
               >
                 <Car className="h-4 w-4" />
                 Auto's Beheren
@@ -189,7 +189,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
               <Button 
                 onClick={() => navigate('/students')} 
                 variant="outline" 
-                className="w-full flex items-center gap-2"
+                className="w-full flex items-center gap-2 text-sm"
               >
                 <Users className="h-4 w-4" />
                 Leerlingen Beheren
@@ -197,7 +197,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
 
               <Dialog open={showInstructorDialog} onOpenChange={setShowInstructorDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full text-sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Instructeur Toevoegen
                   </Button>
@@ -258,7 +258,7 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
             <div className="mt-4">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full text-sm">
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Leerling Pakketten
                   </Button>

@@ -106,20 +106,20 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
           {/* Mobile Navigation Menu */}
           <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="md:hidden">
+              <Button variant="ghost" size="sm" className="lg:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80">
+            <SheetContent side="left" className="w-[280px] sm:w-[320px]">
               <SheetHeader>
                 <SheetTitle>Navigatie</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 space-y-2">
+              <div className="mt-6 space-y-1">
                 {menuItems[userRole].map((item) => (
                   <Button
                     key={item.path}
                     variant="ghost"
-                    className="w-full justify-start"
+                    className="w-full justify-start text-sm py-3"
                     onClick={() => {
                       navigate(item.path);
                       setIsMenuOpen(false);
@@ -134,14 +134,14 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
           </Sheet>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {menuItems[userRole].slice(0, 4).map((item) => (
               <Button
                 key={item.path}
                 variant="ghost"
-                size="sm"
+                size="sm" 
                 onClick={() => navigate(item.path)}
-                className="hover-scale"
+                className="hover-scale text-sm"
               >
                 <item.icon className="mr-2 h-4 w-4" />
                 {item.label}

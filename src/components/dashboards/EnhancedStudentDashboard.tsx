@@ -416,8 +416,8 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
       />
 
       <div className="p-4 md:p-6">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
             <TabsTrigger value="requests">Mijn Verzoeken</TabsTrigger>
@@ -427,9 +427,9 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
           <TabsContent value="overview" className="space-y-6">
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Resterend</p>
@@ -441,7 +441,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Gepland</p>
@@ -453,7 +453,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Theorie Examen</p>
@@ -479,19 +479,35 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="full_name">Naam</Label>
-                    <Input id="full_name" value={profileForm.full_name} onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })} />
+                    <Input 
+                      id="full_name" 
+                      value={profileForm.full_name} 
+                      onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+                      className="text-sm"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="email">E-mail</Label>
-                    <Input id="email" type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      value={profileForm.email} 
+                      onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                      className="text-sm"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="phone">Telefoon</Label>
-                    <Input id="phone" value={profileForm.phone || ''} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} />
+                    <Input 
+                      id="phone" 
+                      value={profileForm.phone || ''} 
+                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                      className="text-sm"
+                    />
                   </div>
                 </div>
-                <div className="mt-4">
-                  <Button onClick={handleSaveProfile}>Opslaan</Button>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={handleSaveProfile} size="sm">Opslaan</Button>
                 </div>
               </CardContent>
             </Card>
@@ -512,11 +528,11 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
                 )}
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                   <Dialog open={showLessonDialog} onOpenChange={setShowLessonDialog}>
                     <DialogTrigger asChild>
                       <Button 
-                        className="w-full" 
+                        className="w-full text-sm" 
                         disabled={totalRemaining <= 0}
                       >
                         <Plus className="h-4 w-4 mr-2" />
@@ -640,7 +656,7 @@ export const EnhancedStudentDashboard: React.FC<EnhancedStudentDashboardProps> =
 
                   <Dialog open={showPackageDialog} onOpenChange={setShowPackageDialog}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full text-sm">
                         <BookOpen className="h-4 w-4 mr-2" />
                         Lespakket Aanvragen
                       </Button>

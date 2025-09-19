@@ -217,8 +217,8 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
       />
 
       <div className="p-4 md:p-6">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+        <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
             <TabsTrigger value="overview">Overzicht</TabsTrigger>
             <TabsTrigger value="calendar">Agenda</TabsTrigger>
             <TabsTrigger value="requests">
@@ -232,9 +232,9 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
 
           <TabsContent value="overview" className="space-y-6">
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Lessen Vandaag</p>
@@ -246,7 +246,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Mijn Leerlingen</p>
@@ -258,7 +258,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Openstaande Verzoeken</p>
@@ -276,10 +276,10 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                 <CardTitle>Snelle Acties</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                   <Dialog open={showStudentDialog} onOpenChange={setShowStudentDialog}>
                     <DialogTrigger asChild>
-                      <Button className="w-full">
+                      <Button className="w-full text-sm">
                         <UserPlus className="h-4 w-4 mr-2" />
                         Leerling Aanmaken
                       </Button>
@@ -337,7 +337,7 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
                     </DialogContent>
                   </Dialog>
 
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full text-sm">
                     <Settings className="h-4 w-4 mr-2" />
                     Leerlingen Beheren
                   </Button>

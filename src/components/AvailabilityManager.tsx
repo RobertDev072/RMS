@@ -231,11 +231,11 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal text-sm",
                           !formData.date && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="mr-2 h-3 w-3 md:h-4 md:w-4" />
                         {formData.date ? format(formData.date, 'PPP', { locale: nl }) : 'Selecteer datum'}
                       </Button>
                     </PopoverTrigger>
@@ -260,6 +260,7 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                       type="time"
                       value={formData.start_time}
                       onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                      className="text-sm"
                     />
                   </div>
                   <div>
@@ -269,6 +270,7 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                       type="time"
                       value={formData.end_time}
                       onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                      className="text-sm"
                     />
                   </div>
                 </div>
@@ -280,18 +282,18 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                       type="button"
                       variant={formData.is_available ? "default" : "outline"}
                       onClick={() => setFormData({ ...formData, is_available: true, reason: '' })}
-                      className="flex-1"
+                      className="flex-1 text-xs md:text-sm"
                     >
-                      <Check className="h-4 w-4 mr-2" />
+                      <Check className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                       Beschikbaar
                     </Button>
                     <Button
                       type="button"
                       variant={!formData.is_available ? "destructive" : "outline"}
                       onClick={() => setFormData({ ...formData, is_available: false })}
-                      className="flex-1"
+                      className="flex-1 text-xs md:text-sm"
                     >
-                      <X className="h-4 w-4 mr-2" />
+                      <X className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                       Niet Beschikbaar
                     </Button>
                   </div>
@@ -305,6 +307,7 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                       value={formData.reason}
                       onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                       placeholder="Bijv. ziek, vakantie, examen..."
+                      className="text-sm"
                     />
                   </div>
                 )}
@@ -322,45 +325,45 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
         {Object.keys(groupedAvailability).length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
             <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Geen beschikbaarheid ingesteld</p>
-            <p className="text-sm mt-1">Klik op "Beschikbaarheid Toevoegen" om te beginnen</p>
+            <p className="text-sm md:text-base">Geen beschikbaarheid ingesteld</p>
+            <p className="text-xs md:text-sm mt-1">Klik op "Beschikbaarheid Toevoegen" om te beginnen</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {Object.entries(groupedAvailability).map(([date, entries]) => (
               <Card key={date}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
+                <CardHeader className="pb-2 md:pb-3">
+                  <CardTitle className="text-sm md:text-base">
                     {format(new Date(date), 'EEEE d MMMM yyyy', { locale: nl })}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:space-y-3">
                     {entries.map((entry) => (
-                      <div key={entry.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={entry.id} className="flex items-center justify-between p-2 md:p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">
+                          <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
+                          <span className="text-sm md:text-base font-medium">
                             {entry.start_time} - {entry.end_time}
                           </span>
                           <Badge 
                             variant={entry.is_available ? "default" : "destructive"}
-                            className="ml-2"
+                            className="ml-1 md:ml-2 text-xs"
                           >
                             {entry.is_available ? (
                               <>
-                                <Check className="h-3 w-3 mr-1" />
+                                <Check className="h-2 w-2 md:h-3 md:w-3 mr-1" />
                                 Beschikbaar
                               </>
                             ) : (
                               <>
-                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                <AlertTriangle className="h-2 w-2 md:h-3 md:w-3 mr-1" />
                                 Niet Beschikbaar
                               </>
                             )}
                           </Badge>
                           {entry.reason && (
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">
                               - {entry.reason}
                             </span>
                           )}
@@ -369,8 +372,9 @@ export const AvailabilityManager = ({ onAvailabilityChange }: AvailabilityManage
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(entry.id)}
+                          className="h-8 w-8 p-0"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3 w-3 md:h-4 md:w-4" />
                         </Button>
                       </div>
                     ))}
