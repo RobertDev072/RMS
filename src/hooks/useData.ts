@@ -169,6 +169,18 @@ export const useData = () => {
     try {
       setLoading(true);
       
+      // Debug: Check current user
+      const { data: currentUser } = await supabase.auth.getUser();
+      console.log('Current user fetching students:', currentUser.user?.email);
+      
+      // Debug: Check user profile
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', currentUser.user?.id)
+        .single();
+      console.log('User profile:', userProfile);
+      
       // Simple query - RLS policies will handle the filtering
       const { data, error } = await supabase
         .from('students')
@@ -180,6 +192,7 @@ export const useData = () => {
 
       if (error) {
         console.error('Error fetching students:', error);
+        console.error('Error details:', error.message, error.code, error.details);
         toast({
           title: "Fout bij ophalen leerlingen",
           description: error.message,
@@ -188,7 +201,7 @@ export const useData = () => {
         return;
       }
 
-      console.log('Fetched students:', data?.length || 0);
+      console.log('Fetched students:', data?.length || 0, 'students:', data);
       setStudents(data || []);
     } catch (error) {
       console.error('Error in fetchStudents:', error);

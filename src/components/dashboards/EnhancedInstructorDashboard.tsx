@@ -59,15 +59,17 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
   useEffect(() => {
     if (user?.id) {
       fetchLessons('instructor', user.id);
-      // Add debug logging
-      console.log('Fetching students for instructor:', user.id);
-      fetchStudents().then(() => {
-        console.log('Students fetched, count:', students.length);
-      });
+      fetchStudents();
       fetchLessonRequests('instructor', user.id);
       fetchLessonPackages();
     }
   }, [user]);
+  
+  // Debug effect to log student data
+  useEffect(() => {
+    console.log('Students state updated:', students.length, 'students');
+    console.log('Students data:', students);
+  }, [students]);
 
   const loadCalendarEvents = async () => {
     if (!user?.id) return;
