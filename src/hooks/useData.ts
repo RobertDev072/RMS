@@ -168,12 +168,31 @@ export const useData = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Get current user to check role
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        setStudents([]);
+        return;
+      }
+
+      // Get user profile to check role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', userData.user.id)
+        .single();
+
+      let query = supabase
         .from('students')
         .select(`
           *,
           profile:profiles!inner(id, full_name, email, phone)
         `);
+
+      // For instructors, we need to get all students since they can teach any student
+      // The RLS policy should handle the security
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching students:', error);
