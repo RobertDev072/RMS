@@ -19,7 +19,8 @@ import {
   Calendar,
   PackageIcon,
   CreditCard,
-  Bell
+  Bell,
+  Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +79,7 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
       { icon: Calendar, label: 'Mijn Agenda', path: '/schedule' },
       { icon: Users, label: 'Mijn Leerlingen', path: '/my-students' },
       { icon: Bell, label: 'Aanvragen', path: '/requests' },
+      { icon: Clock, label: 'Schema', path: '/availability' },
     ],
     student: [
       { icon: Calendar, label: 'Mijn Lessen', path: '/my-lessons' },
