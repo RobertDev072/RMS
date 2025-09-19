@@ -213,8 +213,9 @@ export const EnhancedAdminDashboard: React.FC<EnhancedAdminDashboardProps> = ({
                         id="instructor_email"
                         type="email"
                         value={instructorForm.email}
-                        onChange={(e) => setInstructorForm({...instructorForm, email: e.target.value})}
+                        onChange={(e) => setInstructorForm({...instructorForm, email: e.target.value.trim().toLowerCase()})}
                         placeholder="instructeur@rijschool.nl"
+                        required
                       />
                     </div>
                     <div>

@@ -542,8 +542,35 @@ export const useData = () => {
     specializations?: string[];
   }) => {
     try {
+      // Validate and clean email
+      const cleanEmail = instructorData.email.trim().toLowerCase();
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(cleanEmail)) {
+        toast({
+          title: "Ongeldig e-mailadres",
+          description: "Voer een geldig e-mailadres in.",
+          variant: "destructive",
+        });
+        return { error: new Error('Invalid email') };
+      }
+
+      // Check if email already exists
+      const { data: existingUser } = await supabase.auth.admin.listUsers();
+      const emailExists = existingUser.users.some(u => u.email === cleanEmail);
+      
+      if (emailExists) {
+        toast({
+          title: "E-mailadres al in gebruik",
+          description: "Dit e-mailadres is al geregistreerd.",
+          variant: "destructive",
+        });
+        return { error: new Error('Email already exists') };
+      }
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: instructorData.email,
+        email: cleanEmail,
         password: instructorData.password,
         options: {
           emailRedirectTo: undefined,
@@ -551,7 +578,7 @@ export const useData = () => {
             full_name: instructorData.full_name,
             role: 'instructor'
           },
-          skipConfirmation: true
+          emailRedirectTo: undefined
         }
       });
 
