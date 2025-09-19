@@ -491,12 +491,11 @@ export const useData = () => {
         email: studentData.email,
         password: 'TempPass123!', // Temporary password
         options: {
-          emailRedirectTo: undefined, // Disable email redirect
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: studentData.full_name,
             role: 'student'
           },
-          // Skip email confirmation for instructor-created accounts
           skipConfirmation: true
         }
       });
@@ -556,29 +555,16 @@ export const useData = () => {
         return { error: new Error('Invalid email') };
       }
 
-      // Check if email already exists
-      const { data: existingUser } = await supabase.auth.admin.listUsers();
-      const emailExists = existingUser.users.some(u => u.email === cleanEmail);
-      
-      if (emailExists) {
-        toast({
-          title: "E-mailadres al in gebruik",
-          description: "Dit e-mailadres is al geregistreerd.",
-          variant: "destructive",
-        });
-        return { error: new Error('Email already exists') };
-      }
-
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password: instructorData.password,
         options: {
-          emailRedirectTo: undefined,
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: instructorData.full_name,
             role: 'instructor'
           },
-          emailRedirectTo: undefined
+          skipConfirmation: true
         }
       });
 

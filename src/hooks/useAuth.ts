@@ -98,13 +98,11 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, fullName: string, role: 'admin' | 'instructor' | 'student' = 'student') => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: undefined,
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: fullName,
             role: role
