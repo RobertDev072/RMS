@@ -29,12 +29,14 @@ interface MobileProfileHeaderProps {
   userName: string;
   userRole: 'admin' | 'instructor' | 'student';
   onLogout: () => void;
+  onTabChange?: (tab: string) => void;
 }
 
 export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
   userName,
   userRole,
   onLogout,
+  onTabChange,
 }) => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,23 +70,23 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
 
   const menuItems = {
     admin: [
-      { icon: Users, label: 'Leerlingen', path: '/students' },
-      { icon: User, label: 'Instructeurs', path: '/instructors' },
-      { icon: Car, label: 'Auto\'s', path: '/cars' },
-      { icon: PackageIcon, label: 'Pakketten', path: '/packages' },
-      { icon: CreditCard, label: 'Betalingen', path: '/payments' },
-      { icon: Calendar, label: 'Agenda', path: '/calendar' },
+      { icon: Users, label: 'Leerlingen', path: '/students', type: 'route' },
+      { icon: User, label: 'Instructeurs', path: '/instructors', type: 'route' },
+      { icon: Car, label: 'Auto\'s', path: '/cars', type: 'route' },
+      { icon: PackageIcon, label: 'Pakketten', path: '/packages', type: 'route' },
+      { icon: CreditCard, label: 'Betalingen', path: '/payments', type: 'route' },
+      { icon: Calendar, label: 'Agenda', path: '/calendar', type: 'route' },
     ],
     instructor: [
-      { icon: Calendar, label: 'Mijn Agenda', path: '/schedule' },
-      { icon: Users, label: 'Mijn Leerlingen', path: '/my-students' },
-      { icon: Bell, label: 'Aanvragen', path: '/requests' },
-      { icon: Clock, label: 'Schema', path: '/availability' },
+      { icon: Calendar, label: 'Mijn Agenda', path: 'calendar', type: 'tab' },
+      { icon: Users, label: 'Mijn Leerlingen', path: 'overview', type: 'tab' },
+      { icon: Bell, label: 'Aanvragen', path: 'requests', type: 'tab' },
+      { icon: Clock, label: 'Schema', path: 'availability', type: 'tab' },
     ],
     student: [
-      { icon: Calendar, label: 'Mijn Lessen', path: '/my-lessons' },
-      { icon: PackageIcon, label: 'Pakketten', path: '/packages' },
-      { icon: CreditCard, label: 'Betalingen', path: '/my-payments' },
+      { icon: Calendar, label: 'Mijn Lessen', path: '/my-lessons', type: 'route' },
+      { icon: PackageIcon, label: 'Pakketten', path: '/packages', type: 'route' },
+      { icon: CreditCard, label: 'Betalingen', path: '/my-payments', type: 'route' },
     ]
   };
 
@@ -123,7 +125,11 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
                     variant="ghost"
                     className="w-full justify-start text-sm py-3"
                     onClick={() => {
-                      navigate(item.path);
+                      if (item.type === 'route') {
+                        navigate(item.path);
+                      } else if (item.type === 'tab' && onTabChange) {
+                        onTabChange(item.path);
+                      }
                       setIsMenuOpen(false);
                     }}
                   >
@@ -142,7 +148,13 @@ export const MobileProfileHeader: React.FC<MobileProfileHeaderProps> = ({
                 key={item.path}
                 variant="ghost"
                 size="sm" 
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  if (item.type === 'route') {
+                    navigate(item.path);
+                  } else if (item.type === 'tab' && onTabChange) {
+                    onTabChange(item.path);
+                  }
+                }}
                 className="hover-scale text-sm"
               >
                 <item.icon className="mr-2 h-4 w-4" />
