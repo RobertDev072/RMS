@@ -169,39 +169,34 @@ export const useData = () => {
     try {
       setLoading(true);
       
-      // Get current user to check role
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        setStudents([]);
-        return;
-      }
-
-      // Get user profile to check role
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', userData.user.id)
-        .single();
-
-      let query = supabase
+      // Simple query - RLS policies will handle the filtering
+      const { data, error } = await supabase
         .from('students')
         .select(`
           *,
           profile:profiles!inner(id, full_name, email, phone)
-        `);
-
-      // For instructors, we need to get all students since they can teach any student
-      // The RLS policy should handle the security
-      const { data, error } = await query;
+        `)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching students:', error);
+        toast({
+          title: "Fout bij ophalen leerlingen",
+          description: error.message,
+          variant: "destructive",
+        });
         return;
       }
 
+      console.log('Fetched students:', data?.length || 0);
       setStudents(data || []);
     } catch (error) {
       console.error('Error in fetchStudents:', error);
+      toast({
+        title: "Fout bij ophalen leerlingen",
+        description: "Er is een onverwachte fout opgetreden",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

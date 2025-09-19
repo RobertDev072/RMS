@@ -59,7 +59,11 @@ export const EnhancedInstructorDashboard: React.FC<EnhancedInstructorDashboardPr
   useEffect(() => {
     if (user?.id) {
       fetchLessons('instructor', user.id);
-      fetchStudents();
+      // Add debug logging
+      console.log('Fetching students for instructor:', user.id);
+      fetchStudents().then(() => {
+        console.log('Students fetched, count:', students.length);
+      });
       fetchLessonRequests('instructor', user.id);
       fetchLessonPackages();
     }
