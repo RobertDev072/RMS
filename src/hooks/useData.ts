@@ -564,7 +564,7 @@ export const useData = () => {
             full_name: instructorData.full_name,
             role: 'instructor'
           },
-          skipConfirmation: true
+          emailRedirectTo: undefined
         }
       });
 
