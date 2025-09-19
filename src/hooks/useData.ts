@@ -506,9 +506,10 @@ export const useData = () => {
     password: string;
   }) => {
     try {
-      // Validate email format
+      // Clean and validate email
+      const cleanEmail = studentData.email.trim().toLowerCase();
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(studentData.email.trim())) {
+      if (!emailRegex.test(cleanEmail)) {
         toast({
           title: "Ongeldig e-mailadres",
           description: "Voer een geldig e-mailadres in.",
@@ -517,43 +518,46 @@ export const useData = () => {
         return { error: new Error('Invalid email'), credentials: null };
       }
 
-      // Use edge function to create student with admin privileges
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/create-student`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabase.supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: studentData.email.trim().toLowerCase(),
-          password: studentData.password,
-          full_name: studentData.full_name,
-          phone: studentData.phone,
-          license_type: studentData.license_type || 'B'
-        })
+      // Create user with regular signup (will be auto-confirmed)
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password: studentData.password,
+        options: {
+          data: {
+            full_name: studentData.full_name,
+            role: 'student'
+          }
+        }
       });
 
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
+      if (authError) {
         toast({
           title: "Fout bij aanmaken leerling",
-          description: data.error || "Onbekende fout",
+          description: authError.message,
           variant: "destructive",
         });
-        return { error: new Error(data.error || "Request failed"), credentials: null };
+        return { error: authError, credentials: null };
+      }
+
+      if (!authData.user) {
+        toast({
+          title: "Fout bij aanmaken leerling",
+          description: "Gebruiker aanmaken mislukt",
+          variant: "destructive",
+        });
+        return { error: new Error("User creation failed"), credentials: null };
       }
 
       toast({
         title: "Leerling aangemaakt",
-        description: `${studentData.full_name} kan nu direct inloggen met het opgegeven wachtwoord.`,
+        description: `${studentData.full_name} is aangemaakt en kan direct inloggen.`,
       });
 
       await fetchStudents();
       return { 
         error: null, 
         credentials: {
-          email: studentData.email,
+          email: cleanEmail,
           password: studentData.password
         }
       };
@@ -561,7 +565,7 @@ export const useData = () => {
       console.error('Error in createStudent:', error);
       toast({
         title: "Fout bij aanmaken leerling",
-        description: error.message || "Netwerkfout - probeer opnieuw",
+        description: error.message || "Er is een fout opgetreden",
         variant: "destructive",
       });
       return { error, credentials: null };
