@@ -785,11 +785,11 @@ const { data: studentData } = await supabase
       }
 
       // Get student record
-      const { data: studentData } = await supabase
-        .from('students')
-        .select('id')
-        .eq('profile_id', profileData.id)
-        .single();
+ const { data: studentData } = await supabase
+  .from('students')
+  .select('id, lessons_remaining')
+  .eq('profile_id', profileData.id)
+  .single();
 
       if (!studentData) {
         throw new Error('Student niet gevonden');
